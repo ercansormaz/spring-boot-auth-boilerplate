@@ -14,6 +14,7 @@ public enum ErrorType {
   INVALID_REFRESH_TOKEN(1011, "Refresh token invalid. Please login again."),
 
   INVALID_GOOGLE_TOKEN(1012, "Invalid or expired Google token."),
+  INVALID_APPLE_TOKEN(1013, "Invalid or expired Apple token."),
 
   ;
 
