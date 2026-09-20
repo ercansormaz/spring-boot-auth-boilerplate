@@ -100,6 +100,13 @@
       <scope>compile</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j_jdk17-core</artifactId>
+      <version>8.19.0</version>
+      <scope>compile</scope>
+    </dependency>
+
     <!-- Development Helper Dependencies -->
     <dependency>
       <groupId>org.projectlombok</groupId>

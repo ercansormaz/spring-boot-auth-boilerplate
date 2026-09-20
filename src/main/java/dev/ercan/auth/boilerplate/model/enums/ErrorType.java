@@ -16,6 +16,12 @@ public enum ErrorType {
   INVALID_GOOGLE_TOKEN(1012, "Invalid or expired Google token."),
   INVALID_APPLE_TOKEN(1013, "Invalid or expired Apple token."),
 
+  ANONYMOUS_LOGIN_LIMIT_EXCEED(3001, "Too many anonymous login. Please try again later."),
+  REFRESH_TOKEN_SUCCESS_LIMIT_EXCEED(3002, "Too many refresh token login. Please try again later."),
+  REFRESH_TOKEN_FAIL_LIMIT_EXCEED(3003, "Too many failed refresh token login. Please try again later."),
+  APPLE_LOGIN_FAIL_LIMIT_EXCEED(3004, "Too many failed apple login. Please try again later."),
+  GOOGLE_LOGIN_FAIL_LIMIT_EXCEED(3005, "Too many failed google login. Please try again later."),
+
   ;
 
   private final int code;

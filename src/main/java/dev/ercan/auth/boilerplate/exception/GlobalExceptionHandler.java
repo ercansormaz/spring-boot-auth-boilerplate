@@ -40,4 +40,11 @@ public class GlobalExceptionHandler {
     return new ErrorResponse(ex.getErrorType());
   }
 
+  @ResponseStatus(value = HttpStatus.TOO_MANY_REQUESTS)
+  @ExceptionHandler(value = RateLimitExceedException.class)
+  public ErrorResponse rateLimitExceedException(RateLimitExceedException ex) {
+    log.warn("[GLOBAL_EXCEPTION_HANDLER] [RATE_LIMIT_EXCEED] [TYPE={}]", ex.getErrorType().name());
+    return new ErrorResponse(ex.getErrorType());
+  }
+
 }

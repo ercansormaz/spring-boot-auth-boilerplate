@@ -43,3 +43,45 @@ auth:
     client-id: ${AUTH_APPLE_CLIENT_ID}
     issuers: https://appleid.apple.com
     jwk-url: https://appleid.apple.com/auth/keys
+
+ratelimit:
+  storage-type: inmemory
+  ip-header-name: X-Forwarded-For
+  trusted-proxies:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+  policies:
+    anonymous-login-success:
+      ip:
+        enabled: true
+        limit: 5
+        window: 24h
+
+      global:
+        enabled: true
+        limit: 100
+        window: 24h
+
+    refresh-token-success:
+      ip:
+        enabled: true
+        limit: 3
+        window: 60s
+
+    refresh-token-fail:
+      ip:
+        enabled: true
+        limit: 5
+        window: 24h
+
+    apple-login-fail:
+      ip:
+        enabled: true
+        limit: 5
+        window: 24h
+
+    google-login-fail:
+      ip:
+        enabled: true
+        limit: 5
+        window: 24h
