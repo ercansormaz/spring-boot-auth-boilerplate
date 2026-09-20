@@ -73,7 +73,19 @@
       <artifactId>mysql-connector-j</artifactId>
       <scope>runtime</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-envers</artifactId>
+    </dependency>
     <!-- Data Source Dependencies -->
+
+    <dependency>
+      <groupId>dev.ercan</groupId>
+      <artifactId>fernet</artifactId>
+      <version>1.0.0</version>
+      <scope>compile</scope>
+    </dependency>
 
     <!-- Development Helper Dependencies -->
     <dependency>

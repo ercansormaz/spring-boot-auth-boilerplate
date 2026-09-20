@@ -4,3 +4,29 @@ server:
 spring:
   application:
     name: spring-boot-auth-boilerplate
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:boilerplate}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD}
+
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+
+auth:
+  token:
+    type: fernet
+    access:
+      duration: 1m
+    refresh:
+      duration: 10d
+    fernet:
+      secret: ${AUTH_TOKEN_FERNET_SECRET}
+
+  anonymous:
+    enabled: true
+    email:
+      domain: boilerplate.ercan.dev
