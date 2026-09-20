@@ -4,6 +4,7 @@ public enum AuthProviderType {
 
   ANONYMOUS,
   REFRESH_TOKEN,
+  GOOGLE,
 
   ;
 

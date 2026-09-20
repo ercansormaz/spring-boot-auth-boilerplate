@@ -19,4 +19,8 @@ public class AccountService {
     return accountRepository.findById(id).orElse(null);
   }
 
+  public Account getByEmail(String email) {
+    return accountRepository.findByEmail(email);
+  }
+
 }

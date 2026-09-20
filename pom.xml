@@ -87,6 +87,19 @@
       <scope>compile</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>4.6.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>jwks-rsa</artifactId>
+      <version>0.24.1</version>
+      <scope>compile</scope>
+    </dependency>
+
     <!-- Development Helper Dependencies -->
     <dependency>
       <groupId>org.projectlombok</groupId>

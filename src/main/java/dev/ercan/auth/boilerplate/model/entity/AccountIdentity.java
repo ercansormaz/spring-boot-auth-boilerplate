@@ -22,24 +22,26 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "login_history", indexes = {
-    @Index(name = "idx_login_history_device", columnList = "device_id")
+@Table(name = "account_identity", indexes = {
+    @Index(name = "idx_account_identity", columnList = "provider, subject", unique = true)
 })
-public class LoginHistory {
+public class AccountIdentity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "device_id", foreignKey = @ForeignKey(name = "fk_login_history_device"))
-  private Device device;
-
-  @CreationTimestamp
-  private Instant createdAt;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "account_id", foreignKey = @ForeignKey(name = "fk_account_identity_account"))
+  private Account account;
 
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "varchar(255)")
-  private AuthProviderType type;
+  private AuthProviderType provider;
+
+  private String subject;
+
+  @CreationTimestamp
+  private Instant createdAt;
 
 }

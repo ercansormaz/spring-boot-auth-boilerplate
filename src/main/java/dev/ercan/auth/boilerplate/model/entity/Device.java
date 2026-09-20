@@ -49,10 +49,12 @@ public class Device {
 
   @NotAudited
   @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "varchar(255)")
   private DevicePlatform platform;
 
   @NotAudited
   @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "varchar(255)")
   private DeviceType type;
 
   @Column(length = 2)

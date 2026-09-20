@@ -23,6 +23,7 @@ auth:
       duration: 1m
     refresh:
       duration: 10d
+
     fernet:
       secret: ${AUTH_TOKEN_FERNET_SECRET}
 
@@ -30,3 +31,9 @@ auth:
     enabled: true
     email:
       domain: boilerplate.ercan.dev
+
+  google:
+    enabled: true
+    client-id: ${AUTH_GOOGLE_CLIENT_ID}
+    issuers: https://accounts.google.com
+    jwk-url: https://www.googleapis.com/oauth2/v3/certs

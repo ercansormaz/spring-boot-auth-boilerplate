@@ -7,6 +7,7 @@ public class ApiEndpoints {
   // Auth
   public static final String ANONYMOUS_AUTH = "/v1/auth/anonymous";
   public static final String REFRESH_TOKEN_AUTH = "/v1/auth/refresh";
+  public static final String GOOGLE_AUTH = "/v1/auth/google";
 
   private ApiEndpoints() {
     /* This utility class should not be instantiated */
