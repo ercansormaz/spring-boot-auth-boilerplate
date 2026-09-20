@@ -7,6 +7,7 @@ import dev.ercan.auth.boilerplate.repository.DeviceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -17,6 +18,10 @@ public class DeviceService {
 
   public Device getById(String id) {
     return deviceRepository.findById(UUID.fromString(id)).orElse(null);
+  }
+
+  public Device getByAccountAndId(Account account, String id) {
+    return deviceRepository.findByAccountAndId(account, UUID.fromString(id));
   }
 
   public Device registerOrUpdateDevice(Account account, DeviceRequest deviceRequest) {
@@ -35,6 +40,15 @@ public class DeviceService {
     updateDeviceFields(device, deviceRequest);
 
     return deviceRepository.save(device);
+  }
+
+  public List<Device> getActivesByAccount(Account account) {
+    return deviceRepository.findByAccountAndActive(account, true);
+  }
+
+  public void deactivate(Device device) {
+    device.setActive(false);
+    deviceRepository.save(device);
   }
 
   private Device buildNewDevice(Account account, DeviceRequest request) {

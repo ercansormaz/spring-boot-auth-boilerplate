@@ -26,6 +26,10 @@ public class RefreshTokenService {
     return refreshTokenRepository.findById(id).orElse(null);
   }
 
+  public RefreshToken getByDevice(Device device) {
+    return refreshTokenRepository.findByDevice(device);
+  }
+
   @Transactional(propagation = Propagation.MANDATORY)
   public RefreshToken rotate(Device device) {
     RefreshToken refreshToken = refreshTokenRepository.findByDevice(device);

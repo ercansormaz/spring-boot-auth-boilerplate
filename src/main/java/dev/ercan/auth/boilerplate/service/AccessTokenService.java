@@ -26,6 +26,10 @@ public class AccessTokenService {
     return accessTokenRepository.findById(id).orElse(null);
   }
 
+  public AccessToken getByDevice(Device device) {
+    return accessTokenRepository.findByDevice(device);
+  }
+
   @Transactional(propagation = Propagation.MANDATORY)
   public AccessToken rotate(Device device) {
     AccessToken accessToken = accessTokenRepository.findByDevice(device);
@@ -35,6 +39,10 @@ public class AccessTokenService {
     }
 
     return update(accessToken);
+  }
+
+  public void deleteByDevice(Device device) {
+    accessTokenRepository.deleteByDevice(device);
   }
 
   private AccessToken create(Device device) {
