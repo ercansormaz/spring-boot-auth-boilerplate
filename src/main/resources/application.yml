@@ -18,7 +18,7 @@ spring:
 
 auth:
   token:
-    type: fernet
+    type: fernet # fernet or jwt
     access:
       duration: 1m
     refresh:
@@ -26,6 +26,10 @@ auth:
 
     fernet:
       secret: ${AUTH_TOKEN_FERNET_SECRET}
+
+    jwt:
+      secret: ${AUTH_TOKEN_JWT_SECRET}
+      issuer: ${AUTH_TOKEN_JWT_ISSUER}
 
   anonymous:
     enabled: true
