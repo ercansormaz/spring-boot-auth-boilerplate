@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +51,7 @@ public class JwtTokenProvider implements TokenProvider {
         .withJWTId(String.valueOf(authTokenDetail.getId()))
         .withSubject(String.valueOf(authTokenDetail.getAccountId()))
         .withIssuer(issuer)
-        .withClaim(DEVICE_CLAIM, authTokenDetail.getDeviceId())
+        .withClaim(DEVICE_CLAIM, authTokenDetail.getDeviceId().toString())
         .withClaim(SCOPE_CLAIM, authTokenDetail.getScope().name())
         .withClaim(TYPE_CLAIM, authTokenDetail.getType())
         .withClaim(SALT_CLAIM, authTokenDetail.getSalt())
@@ -84,7 +85,7 @@ public class JwtTokenProvider implements TokenProvider {
     AuthTokenDetail tokenDetail = new AuthTokenDetail();
     tokenDetail.setId(Long.parseLong(decodedToken.getId()));
     tokenDetail.setAccountId(Long.parseLong(decodedToken.getSubject()));
-    tokenDetail.setDeviceId(decodedToken.getClaim(DEVICE_CLAIM).asString());
+    tokenDetail.setDeviceId(UUID.fromString(decodedToken.getClaim(DEVICE_CLAIM).asString()));
     tokenDetail.setSalt(decodedToken.getClaim(SALT_CLAIM).asString());
     tokenDetail.setScope(Scope.valueOf(decodedToken.getClaim(SCOPE_CLAIM).asString()));
     tokenDetail.setType(decodedToken.getClaim(TYPE_CLAIM).asString());

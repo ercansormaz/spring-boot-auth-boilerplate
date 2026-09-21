@@ -13,6 +13,7 @@ import dev.ercan.auth.boilerplate.model.enums.ErrorType;
 import dev.ercan.auth.boilerplate.model.pojo.OAuthTokenDetail;
 import dev.ercan.auth.boilerplate.service.AccountIdentityService;
 import dev.ercan.auth.boilerplate.service.AccountService;
+import dev.ercan.auth.boilerplate.util.EmailNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.util.StringUtils;
@@ -87,11 +88,10 @@ public abstract class AbstractOAuthProvider implements AuthProvider {
       verifier.verify(token);
 
       String name = jwt.getClaim(NAME_CLAIM).asString();
-      String email = jwt.getClaim(EMAIL_CLAIM).asString();
+      String email = EmailNormalizer.normalize(jwt.getClaim(EMAIL_CLAIM).asString());
       boolean isEmailVerified = jwt.getClaim(EMAIL_VERIFIED_CLAIM).asBoolean();
 
-      return new OAuthTokenDetail(getAuthProviderType(), jwt.getSubject(),
-          StringUtils.hasText(email) ? email.toLowerCase() : null, name, isEmailVerified);
+      return new OAuthTokenDetail(getAuthProviderType(), jwt.getSubject(), email, name, isEmailVerified);
     } catch (Exception e) {
       return null;
     }

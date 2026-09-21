@@ -4,6 +4,7 @@ import dev.ercan.auth.boilerplate.dto.request.AbstractAuthRequest;
 import dev.ercan.auth.boilerplate.model.entity.Account;
 import dev.ercan.auth.boilerplate.model.enums.AuthProviderType;
 import dev.ercan.auth.boilerplate.service.AccountService;
+import dev.ercan.auth.boilerplate.util.EmailNormalizer;
 import dev.ercan.auth.boilerplate.util.UUIDv7;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,7 @@ public class AnonymousAuthProvider implements AuthProvider {
   }
 
   private String createEmail() {
-    return UUIDv7.randomUUID() + "@" + emailDomain;
+    return EmailNormalizer.normalize(UUIDv7.randomUUID() + "@" + emailDomain);
   }
 
 }

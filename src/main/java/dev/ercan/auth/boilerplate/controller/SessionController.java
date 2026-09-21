@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -31,7 +32,7 @@ public class SessionController {
   }
 
   @DeleteMapping("/{deviceId}")
-  public void logoutByDevice(@PathVariable String deviceId, Authentication authentication) {
+  public void logoutByDevice(@PathVariable UUID deviceId, Authentication authentication) {
     Account account = (Account) authentication.getPrincipal();
     sessionFacade.logout(account, deviceId);
   }

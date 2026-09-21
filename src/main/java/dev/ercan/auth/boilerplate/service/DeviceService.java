@@ -16,12 +16,12 @@ public class DeviceService {
 
   private final DeviceRepository deviceRepository;
 
-  public Device getById(String id) {
-    return deviceRepository.findById(UUID.fromString(id)).orElse(null);
+  public Device getById(UUID id) {
+    return deviceRepository.findById(id).orElse(null);
   }
 
-  public Device getByAccountAndId(Account account, String id) {
-    return deviceRepository.findByAccountAndId(account, UUID.fromString(id));
+  public Device getByAccountAndId(Account account, UUID id) {
+    return deviceRepository.findByAccountAndId(account, id);
   }
 
   public Device registerOrUpdateDevice(Account account, DeviceRequest deviceRequest) {

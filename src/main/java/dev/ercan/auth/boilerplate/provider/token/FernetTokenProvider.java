@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +79,7 @@ public class FernetTokenProvider implements TokenProvider {
 
     tokenDetail.setId(Long.parseLong(parts[0]));
     tokenDetail.setAccountId(Long.parseLong(parts[1]));
-    tokenDetail.setDeviceId(parts[2]);
+    tokenDetail.setDeviceId(UUID.fromString(parts[2]));
     tokenDetail.setSalt(parts[3]);
     tokenDetail.setScope(Scope.valueOf(parts[4]));
     tokenDetail.setType(parts[5]);

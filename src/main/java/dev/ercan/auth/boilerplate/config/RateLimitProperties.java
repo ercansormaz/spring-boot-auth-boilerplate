@@ -30,4 +30,10 @@ public class RateLimitProperties {
     private Duration window;
     private boolean enabled;
   }
+
+  public Policy getPolicyByTypeAndScope(RateLimitType type, RateLimitScope scope) {
+    return policies
+        .getOrDefault(type, Map.of())
+        .get(scope);
+  }
 }

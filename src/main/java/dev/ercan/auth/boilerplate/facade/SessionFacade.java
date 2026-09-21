@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class SessionFacade {
   private final AccessTokenService accessTokenService;
   private final RefreshTokenService refreshTokenService;
 
-  public List<ActiveSessionResponse> getActiveSessions(Account account, String currentDeviceId) {
+  public List<ActiveSessionResponse> getActiveSessions(Account account, UUID currentDeviceId) {
     List<Device> activeDevices = deviceService.getActivesByAccount(account);
 
     List<ActiveSessionResponse> result = new ArrayList<>();
@@ -32,7 +33,7 @@ public class SessionFacade {
     Instant now = Instant.now();
 
     activeDevices.forEach(device -> {
-      boolean isCurrent = device.getId().toString().equals(currentDeviceId);
+      boolean isCurrent = device.getId().equals(currentDeviceId);
 
       RefreshToken refreshToken = refreshTokenService.getByDevice(device);
       if (refreshToken != null && now.isBefore(refreshToken.getExpiresAt())) {
@@ -50,7 +51,7 @@ public class SessionFacade {
   }
 
   @Transactional
-  public void logout(Account account, String deviceId) {
+  public void logout(Account account, UUID deviceId) {
     Device device = deviceService.getByAccountAndId(account, deviceId);
     if (Objects.nonNull(device)) {
       accessTokenService.deleteByDevice(device);
@@ -60,11 +61,11 @@ public class SessionFacade {
   }
 
   @Transactional
-  public void logoutOthers(Account account, String currentDeviceId) {
+  public void logoutOthers(Account account, UUID currentDeviceId) {
     List<Device> devices = deviceService.getActivesByAccount(account);
 
     devices.forEach(device -> {
-      if (device.getId().toString().equals(currentDeviceId)) {
+      if (device.getId().equals(currentDeviceId)) {
         return;
       }
 

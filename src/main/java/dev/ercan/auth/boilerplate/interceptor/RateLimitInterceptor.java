@@ -16,7 +16,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public class RateLimitInterceptor implements HandlerInterceptor {
@@ -45,7 +44,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     try {
       for (RateLimit rateLimit : method.getMethod().getAnnotationsByType(RateLimit.class)) {
-        Policy policy = getPolicy(rateLimit);
+        Policy policy = rateLimitProperties.getPolicyByTypeAndScope(rateLimit.type(), rateLimit.scope());
 
         if (policy == null || !policy.isEnabled()) {
           continue;
@@ -108,12 +107,6 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     consumedLimits.add(new ConsumedLimit(key, policy.getLimit(), policy.getWindow(), rateLimit.statuses()));
-  }
-
-  private Policy getPolicy(RateLimit rateLimit) {
-    return rateLimitProperties.getPolicies()
-        .getOrDefault(rateLimit.type(), Map.of())
-        .get(rateLimit.scope());
   }
 
   private boolean shouldCountRequest(int currentStatusCode, HttpStatus[] configuredStatuses) {

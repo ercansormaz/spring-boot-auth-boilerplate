@@ -6,6 +6,7 @@ public enum AuthProviderType {
   REFRESH_TOKEN,
   GOOGLE,
   APPLE,
+  EMAIL,
 
   ;
 

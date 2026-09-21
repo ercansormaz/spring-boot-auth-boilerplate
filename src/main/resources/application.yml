@@ -36,6 +36,9 @@ auth:
     email:
       domain: boilerplate.ercan.dev
 
+  email:
+    enabled: true
+
   google:
     enabled: true
     client-id: ${AUTH_GOOGLE_CLIENT_ID}
@@ -47,6 +50,18 @@ auth:
     client-id: ${AUTH_APPLE_CLIENT_ID}
     issuers: https://appleid.apple.com
     jwk-url: https://appleid.apple.com/auth/keys
+
+otp:
+  encryption:
+    key: ${OTP_ENCRYPTION_KEY}
+
+  email:
+    ttl: 3m
+    length: 6
+    attempt-count: 3
+
+email:
+  sender-type: console # implement your email sender
 
 ratelimit:
   storage-type: inmemory
@@ -88,4 +103,15 @@ ratelimit:
       ip:
         enabled: true
         limit: 5
+        window: 24h
+
+    email-otp-requested:
+      ip:
+        enabled: true
+        limit: 3
+        window: 1h
+
+      user:
+        enabled: true
+        limit: 3
         window: 24h

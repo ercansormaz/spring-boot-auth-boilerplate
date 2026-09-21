@@ -29,11 +29,13 @@ public class AuthenticationFacade {
 
     IssuedTokens tokenResult = authenticationTokenFacade.completeAuthentication(account, authRequest, authProviderType);
 
-    AuthTokenDetail accessToken = tokenProvider.encrypt(AuthTokenDetail.build(tokenResult.accessToken(), account.getId()));
+    AuthTokenDetail accessToken = AuthTokenDetail.build(tokenResult.accessToken(), account.getId());
+    accessToken = tokenProvider.encrypt(accessToken);
 
     AuthTokenDetail refreshToken = null;
     if (Objects.nonNull(tokenResult.refreshToken())) {
-      refreshToken = tokenProvider.encrypt(AuthTokenDetail.build(tokenResult.refreshToken(), account.getId()));
+      refreshToken = AuthTokenDetail.build(tokenResult.refreshToken(), account.getId());
+      refreshToken = tokenProvider.encrypt(refreshToken);
     }
 
     return buildAuthResponse(accessToken, refreshToken);
@@ -53,6 +55,6 @@ public class AuthenticationFacade {
   }
 
   private Long calculateExpiresIn(Instant expireAt) {
-    return Math.max(0,  expireAt.getEpochSecond() - Instant.now().getEpochSecond());
+    return Math.max(0, expireAt.getEpochSecond() - Instant.now().getEpochSecond());
   }
 }
