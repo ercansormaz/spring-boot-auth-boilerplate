@@ -54,9 +54,7 @@ public class SessionFacade {
   public void logout(Account account, UUID deviceId) {
     Device device = deviceService.getByAccountAndId(account, deviceId);
     if (Objects.nonNull(device)) {
-      accessTokenService.deleteByDevice(device);
-      refreshTokenService.deleteByDevice(device);
-      deviceService.deactivate(device);
+      logoutDevice(device);
     }
   }
 
@@ -64,26 +62,29 @@ public class SessionFacade {
   public void logoutOthers(Account account, UUID currentDeviceId) {
     List<Device> devices = deviceService.getActivesByAccount(account);
 
-    devices.forEach(device -> {
-      if (device.getId().equals(currentDeviceId)) {
-        return;
-      }
-
-      accessTokenService.deleteByDevice(device);
-      refreshTokenService.deleteByDevice(device);
-      deviceService.deactivate(device);
-    });
+    devices.stream()
+        .filter(device -> !device.getId().equals(currentDeviceId))
+        .forEach(this::logoutDevice);
   }
 
   @Transactional
   public void logoutAll(Account account) {
     List<Device> devices = deviceService.getActivesByAccount(account);
+    devices.forEach(this::logoutDevice);
+  }
 
-    devices.forEach(device -> {
-      accessTokenService.deleteByDevice(device);
-      refreshTokenService.deleteByDevice(device);
-      deviceService.deactivate(device);
-    });
+  private void logoutDevice(Device device) {
+    AccessToken accessToken = accessTokenService.getByDevice(device);
+    if (Objects.nonNull(accessToken)) {
+      accessTokenService.delete(accessToken);
+    }
+
+    RefreshToken refreshToken = refreshTokenService.getByDevice(device);
+    if (Objects.nonNull(refreshToken)) {
+      refreshTokenService.delete(refreshToken);
+    }
+
+    deviceService.deactivate(device);
   }
 
   private ActiveSessionResponse toDto(Device device, Instant createdAt, boolean isCurrent) {

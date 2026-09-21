@@ -64,7 +64,6 @@ public class Device {
 
   private String osVersion;
 
-  @NotAudited
   private boolean active;
 
   @NotAudited
