@@ -1,0 +1,19 @@
+info:
+  name: Logout
+  type: http
+  seq: 1
+
+http:
+  method: DELETE
+  url: "{{API-URL}}/v1/auth/logout"
+  headers:
+    - name: Authorization
+      value: "{{token-type}} {{access-token}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

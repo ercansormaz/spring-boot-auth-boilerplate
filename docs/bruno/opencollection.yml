@@ -1,0 +1,50 @@
+opencollection: 1.0.0
+
+info:
+  name: spring-boot-auth-boilerplate
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: device.id
+      value: ae2bdbcc-367e-4518-b1cd-9b422681409a
+    - name: device.platform
+      value: IOS
+      description: WEB, IOS, ANDROID, MACOS, WINDOWS, LINUX, FUCHSIA
+    - name: device.type
+      value: PHONE
+      description: WEB, PHONE, TABLET, DESKTOP, TV
+    - name: device.model
+      value: iPhone 17
+    - name: device.language
+      value: tr
+    - name: device.app_version
+      value: 1.0.1
+    - name: device.os_version
+      value: "17.1"
+    - name: otp.id
+      value: 01a0c4e0-c17b-725d-b626-083d1f7c61ea
+    - name: otp.signature
+      value: SH_oehhfJXperrD-SdFlJMQvUZ04Lp1qBgOUQXoiTYg
+    - name: token-type
+      value: Bearer
+    - name: access-token
+      value: gAAAAABqsYvOqmEqWT0aPJp6HY0IlKQLn3yAtB06AKvZUyb4v80ieT46H8ylEa8F7BOZ870B1AmHaSyWo6-Uvfs4XwS3zOVzBzTCu5C7ekrVFSRy9fii5m4y35cAdNk3L8GqJK7yS17HAqWjpZ9NMgfIUJG0dxcDyeB_miIGBeefZ9Z1ICJ9P8yRRxjlwgCTH9u79j9FN5crMP_CrXeqNVRxXAZ--DIGXA==
+    - name: refresh-token
+      value: gAAAAABqsYvOWmfew5cKxytWKGGPewbh1egkX35CTHzddnmgqzRpBkpjSphMxjTN0MrWGP4vYPohcwEixlllnq5vlsZDPWxiKIyegTTOcvFH0Tr5ddeahWgqEZM79URSIYS-lYamyqw9Q2Wg6yPtu2_VF9dd4Lh71Mh6lHrEZVRfUTzNQmZw4LhyVqwGyM9NTR_wADkILbDOC4mjUyB32VgjEKGmXg_sWA==
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

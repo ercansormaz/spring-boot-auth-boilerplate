@@ -1,0 +1,43 @@
+info:
+  name: Google Login
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{API-URL}}/v1/auth/google"
+  body:
+    type: json
+    data: |-
+      {
+        "id_token": "",
+        "remember": true,
+        "device": {
+          "identifier": "{{device.id}}",
+          "platform": "{{device.platform}}",
+          "type": "{{device.type}}",
+          "model": "{{device.model}}",
+          "language": "{{device.language}}",
+          "app_version": "{{device.app_version}}",
+          "os_version": "{{device.os_version}}"
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 200) {
+          let data = res.getBody();
+          bru.setCollectionVar("token-type", data.token_type)
+          bru.setCollectionVar("access-token", data.access_token)
+          bru.setCollectionVar("refresh-token", data.refresh_token)
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

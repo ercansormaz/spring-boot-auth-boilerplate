@@ -1,0 +1,32 @@
+info:
+  name: Email Login
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{API-URL}}/v1/auth/email"
+  body:
+    type: json
+    data: |-
+      {
+        "email": ""
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 202) {
+          let data = res.getBody();
+          bru.setCollectionVar("otp.id", data.id)
+          bru.setCollectionVar("otp.signature", data.signature)
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

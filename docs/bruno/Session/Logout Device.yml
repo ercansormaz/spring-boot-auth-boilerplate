@@ -1,0 +1,23 @@
+info:
+  name: Logout Device
+  type: http
+  seq: 2
+
+http:
+  method: DELETE
+  url: "{{API-URL}}/v1/auth/sessions/:deviceId"
+  headers:
+    - name: Authorization
+      value: "{{token-type}} {{access-token}}"
+  params:
+    - name: deviceId
+      value: ""
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
