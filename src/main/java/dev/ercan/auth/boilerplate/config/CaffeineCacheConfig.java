@@ -1,7 +1,6 @@
 package dev.ercan.auth.boilerplate.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -12,7 +11,6 @@ import java.time.Duration;
 
 @EnableCaching
 @Configuration
-@ConditionalOnProperty(name = "cache.provider", havingValue = "caffeine")
 public class CaffeineCacheConfig {
 
   public static final String EXPIRE_AFTER_WRITE = "expireAfterWrite";

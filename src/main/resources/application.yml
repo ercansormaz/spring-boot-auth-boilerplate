@@ -79,11 +79,7 @@ otp:
 email:
   sender-type: console # implement your email sender
 
-cache:
-  provider: caffeine
-
 ratelimit:
-  storage-type: inmemory
   ip-header-name: X-Forwarded-For
   trusted-proxies:
     - 10.0.0.0/8

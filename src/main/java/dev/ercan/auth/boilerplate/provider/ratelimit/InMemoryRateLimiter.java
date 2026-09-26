@@ -3,14 +3,12 @@ package dev.ercan.auth.boilerplate.provider.ratelimit;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@ConditionalOnProperty(name = "ratelimit.storage-type", havingValue = "inmemory")
 public class InMemoryRateLimiter implements RateLimiter {
 
   private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
