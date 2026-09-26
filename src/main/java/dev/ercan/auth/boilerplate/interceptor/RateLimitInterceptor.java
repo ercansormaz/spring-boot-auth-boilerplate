@@ -1,8 +1,8 @@
 package dev.ercan.auth.boilerplate.interceptor;
 
 import dev.ercan.auth.boilerplate.annotation.RateLimit;
-import dev.ercan.auth.boilerplate.config.RateLimitProperties;
-import dev.ercan.auth.boilerplate.config.RateLimitProperties.Policy;
+import dev.ercan.auth.boilerplate.config.property.RateLimitProperties;
+import dev.ercan.auth.boilerplate.config.property.RateLimitProperties.Policy;
 import dev.ercan.auth.boilerplate.exception.RateLimitExceedException;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import jakarta.annotation.Nullable;

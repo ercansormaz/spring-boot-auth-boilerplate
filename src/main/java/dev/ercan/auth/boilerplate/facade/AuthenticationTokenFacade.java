@@ -14,9 +14,12 @@ import dev.ercan.auth.boilerplate.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -54,6 +57,45 @@ public class AuthenticationTokenFacade {
     loginHistoryService.recordLogin(device, provider);
 
     return new IssuedTokens(accessToken, refreshToken);
+  }
+
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  public int deleteExpiredAccessTokens(int fetchCount) {
+    List<AccessToken> tokenToExpire = accessTokenService.getExpiredTokens(fetchCount);
+
+    if (CollectionUtils.isEmpty(tokenToExpire)) {
+      return 0;
+    }
+
+    tokenToExpire.forEach(accessToken -> {
+      Device device = accessToken.getDevice();
+
+      accessTokenService.delete(accessToken);
+
+      RefreshToken refreshToken = refreshTokenService.getByDevice(device);
+      if (refreshToken == null) {
+        deviceService.deactivate(device);
+      }
+    });
+
+    return tokenToExpire.size();
+  }
+
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  public int deleteExpiredRefreshTokens(int fetchCount) {
+    List<RefreshToken> tokenToExpire = refreshTokenService.getExpiredTokens(fetchCount);
+
+    if (CollectionUtils.isEmpty(tokenToExpire)) {
+      return 0;
+    }
+
+    tokenToExpire.forEach(refreshToken -> {
+      Device device = refreshToken.getDevice();
+      refreshTokenService.delete(refreshToken);
+      deviceService.deactivate(device);
+    });
+
+    return tokenToExpire.size();
   }
 
   private AccessToken rotateAccessToken(Device device) {

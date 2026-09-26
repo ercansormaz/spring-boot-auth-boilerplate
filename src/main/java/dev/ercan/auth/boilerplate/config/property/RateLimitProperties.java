@@ -1,4 +1,4 @@
-package dev.ercan.auth.boilerplate.config;
+package dev.ercan.auth.boilerplate.config.property;
 
 import dev.ercan.auth.boilerplate.model.enums.RateLimitScope;
 import dev.ercan.auth.boilerplate.model.enums.RateLimitType;

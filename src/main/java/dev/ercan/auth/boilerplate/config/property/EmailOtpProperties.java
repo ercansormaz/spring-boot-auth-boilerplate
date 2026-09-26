@@ -1,4 +1,4 @@
-package dev.ercan.auth.boilerplate.config;
+package dev.ercan.auth.boilerplate.config.property;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -15,10 +15,11 @@ import java.time.Duration;
 @ConditionalOnProperty(name = "cache.provider", havingValue = "caffeine")
 public class CaffeineCacheConfig {
 
+  public static final String EXPIRE_AFTER_WRITE = "expireAfterWrite";
   public static final String EXPIRE_AFTER_ACCESS = "expireAfterAccess";
 
-  @Bean
   @Primary
+  @Bean(EXPIRE_AFTER_WRITE)
   public CacheManager expireAfterWriteCacheManager() {
     Caffeine<Object, Object> caffeine = Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(15));
     CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();

@@ -16,13 +16,29 @@ spring:
     hibernate:
       ddl-auto: update
 
+  task:
+    scheduling:
+      pool:
+        size: 5
+      shutdown:
+        await-termination: true
+        await-termination-period: 60s
+
 auth:
   token:
     type: fernet # fernet or jwt
     access:
       duration: 1m
+      cleaner-job:
+        cron: "0 0 * * * *"
+        fetch-count: 10
+        max-iteration: 50
     refresh:
       duration: 10d
+      cleaner-job:
+        cron: "0 0 * * * *"
+        fetch-count: 10
+        max-iteration: 50
 
     fernet:
       secret: ${AUTH_TOKEN_FERNET_SECRET}

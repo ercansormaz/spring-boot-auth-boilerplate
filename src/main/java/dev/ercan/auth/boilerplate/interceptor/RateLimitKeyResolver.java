@@ -1,7 +1,7 @@
 package dev.ercan.auth.boilerplate.interceptor;
 
 import dev.ercan.auth.boilerplate.annotation.RateLimit;
-import dev.ercan.auth.boilerplate.config.RateLimitProperties;
+import dev.ercan.auth.boilerplate.config.property.RateLimitProperties;
 import dev.ercan.auth.boilerplate.model.entity.Account;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

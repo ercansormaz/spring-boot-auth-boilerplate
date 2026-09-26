@@ -1,8 +1,8 @@
 package dev.ercan.auth.boilerplate.facade;
 
-import dev.ercan.auth.boilerplate.config.EmailOtpProperties;
-import dev.ercan.auth.boilerplate.config.RateLimitProperties;
-import dev.ercan.auth.boilerplate.config.RateLimitProperties.Policy;
+import dev.ercan.auth.boilerplate.config.property.EmailOtpProperties;
+import dev.ercan.auth.boilerplate.config.property.RateLimitProperties;
+import dev.ercan.auth.boilerplate.config.property.RateLimitProperties.Policy;
 import dev.ercan.auth.boilerplate.dto.request.OtpRequest;
 import dev.ercan.auth.boilerplate.dto.response.OtpResponse;
 import dev.ercan.auth.boilerplate.exception.RateLimitExceedException;
