@@ -26,6 +26,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,6 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @RequiredArgsConstructor
 public class EmailOtpFacade {
 
+  private static final String COOLDOWN_LIMIT_KEY = "otp:email:cooldown:%s:%s";
   private static final String RATE_LIMIT_KEY = "otp:email:%s";
   private static final String HMAC_DATA = "%s:%s:%s:%s";
 
@@ -52,18 +54,23 @@ public class EmailOtpFacade {
   public OtpResponse createAndSendOtp(OtpFlowType flow, String email) {
     email = EmailNormalizer.normalize(email);
 
-    Policy policy = rateLimitProperties.getPolicyByTypeAndScope(RateLimitType.EMAIL_OTP_REQUESTED, RateLimitScope.USER);
+    String coolDownKey = String.format(COOLDOWN_LIMIT_KEY, flow.name(), email);
 
-    String key = String.format(RATE_LIMIT_KEY, email);
-    if (policy != null && policy.isEnabled() && !rateLimiter.tryConsume(key, policy.getLimit(), policy.getWindow())) {
+    if (!rateLimiter.tryConsume(coolDownKey, 1, Duration.ofSeconds(30L))) {
       throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
     }
 
-    otpService.setSupersededPreviousOnes(flow, email);
+    Policy policy = rateLimitProperties.getPolicyByTypeAndScope(RateLimitType.EMAIL_OTP_REQUESTED, RateLimitScope.USER);
+
+    String rateLimitKey = String.format(RATE_LIMIT_KEY, email);
+    if (policy != null && policy.isEnabled() && !rateLimiter.tryConsume(rateLimitKey, policy.getLimit(), policy.getWindow())) {
+      throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
+    }
 
     String otpValue = RandomUtil.number(emailOtpProperties.getLength());
 
-    OtpDetail otpDetail = createAndGetOtpDetail(flow, email, otpValue, emailOtpProperties.getTtl());
+    Otp otp = otpService.replaceExistingOtp(flow, email, emailOtpProperties.getTtl());
+    OtpDetail otpDetail = createSignedOtpDetail(otp, otpValue, emailOtpProperties.getTtl());
 
     emailSender.sendOtp(otpDetail);
 
@@ -74,7 +81,7 @@ public class EmailOtpFacade {
   public boolean validate(OtpRequest otpRequest, OtpFlowType flow, String dataToVerify) {
     Otp otp = otpService.getById(otpRequest.getId());
 
-    if (Objects.isNull(otp) || !otpService.isOtpValid(otp) || otp.getAttemptCount() >= emailOtpProperties.getAttemptCount()) {
+    if (Objects.isNull(otp) || Instant.now().isAfter(otp.getExpiresAt()) || otp.getAttemptCount() >= emailOtpProperties.getAttemptCount()) {
       return false;
     }
 
@@ -84,7 +91,7 @@ public class EmailOtpFacade {
 
     String hmac = sign(otp.getId(), flow, dataToVerify, otpRequest.getValue());
     if (MessageDigest.isEqual(otpRequest.getSignature().getBytes(UTF_8), hmac.getBytes(UTF_8))) {
-      otpService.setUsed(otp);
+      otpService.delete(otp);
       return true;
     }
 
@@ -93,19 +100,16 @@ public class EmailOtpFacade {
     return false;
   }
 
-  private OtpDetail createAndGetOtpDetail(OtpFlowType flow, String dataToVerify, String value, Duration duration) {
-    Otp otp = otpService.create(flow, dataToVerify, duration);
-
-    String signature = sign(otp.getId(), flow, dataToVerify, value);
-
-    return new OtpDetail(otp.getId(), signature, dataToVerify, value, flow, value.length(), duration.toSeconds());
+  private OtpDetail createSignedOtpDetail(Otp otp, String value, Duration duration) {
+    String signature = sign(otp.getId(), otp.getFlow(), otp.getData(), value);
+    return new OtpDetail(otp.getId(), signature, otp.getData(), value, otp.getFlow(), value.length(), duration.toSeconds());
   }
 
   private String sign(UUID otpId, OtpFlowType flow, String dataToVerify, String value) {
     try {
       return HMacUtil.hmac(encryptionKey, String.format(HMAC_DATA, otpId, flow.name(), dataToVerify, value));
     } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-      log.error("[EMAIL_OTP_FACADE] HMAC generation failed", e);
+      log.error("[EMAIL_OTP_FACADE] [HMAC_GENERATION_FAILED]", e);
       throw new IllegalStateException("Failed to generate OTP signature", e);
     }
   }

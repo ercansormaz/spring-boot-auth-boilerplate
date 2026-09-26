@@ -36,7 +36,7 @@ auth:
     refresh:
       duration: 10d
       cleaner-job:
-        cron: "0 0 * * * *"
+        cron: "0 10 * * * *"
         fetch-count: 10
         max-iteration: 50
 
@@ -70,6 +70,11 @@ auth:
 otp:
   encryption:
     key: ${OTP_ENCRYPTION_KEY}
+
+  cleaner-job:
+    cron: "0 20 * * * *"
+    fetch-count: 10
+    max-iteration: 50
 
   email:
     ttl: 3m

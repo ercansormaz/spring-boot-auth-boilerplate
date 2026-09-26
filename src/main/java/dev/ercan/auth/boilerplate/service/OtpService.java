@@ -1,13 +1,15 @@
 package dev.ercan.auth.boilerplate.service;
 
 import dev.ercan.auth.boilerplate.model.entity.Otp;
-import dev.ercan.auth.boilerplate.model.entity.Otp.Status;
 import dev.ercan.auth.boilerplate.model.enums.OtpFlowType;
 import dev.ercan.auth.boilerplate.repository.OtpRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -19,45 +21,47 @@ public class OtpService {
 
   private final OtpRepository otpRepository;
 
-  public Otp create(OtpFlowType flow, String dataToVerify, Duration duration) {
-    Otp otp = new Otp();
-    otp.setFlow(flow);
-    otp.setData(dataToVerify);
-    otp.setExpiresAt(Instant.now().plus(duration));
-    otp.setStatus(Status.ACTIVE);
-    return otpRepository.save(otp);
-  }
-
-  public Otp save(Otp otp) {
-    return otpRepository.save(otp);
-  }
-
   @Transactional(propagation = Propagation.MANDATORY)
   public Otp getById(UUID id) {
     return otpRepository.findById(id).orElse(null);
   }
 
   @Transactional
-  public void setSupersededPreviousOnes(OtpFlowType flow, String data) {
-    List<Otp> otpList = otpRepository.findByFlowAndDataAndStatus(flow, data, Status.ACTIVE);
-
-    otpList.forEach(otp -> {
-      otp.setStatus(Status.SUPERSEDED);
-      otpRepository.save(otp);
-    });
+  public Otp replaceExistingOtp(OtpFlowType flow, String data, Duration duration) {
+    List<Otp> otpList = otpRepository.findByFlowAndData(flow, data);
+    otpRepository.deleteAll(otpList);
+    return create(flow, data, duration);
   }
 
-  public Otp setUsed(Otp otp) {
-    otp.setStatus(Status.USED);
-    return otpRepository.save(otp);
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void delete(Otp otp) {
+    otpRepository.delete(otp);
   }
 
-  public Otp incrementAttempt(Otp otp) {
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  public int deleteExpiredOtps(int fetchCount) {
+    List<Otp> otpsToExpire = otpRepository.findByExpiresAtBefore(Instant.now(), PageRequest.of(0, fetchCount));
+
+    if (CollectionUtils.isEmpty(otpsToExpire)) {
+      return 0;
+    }
+
+    otpRepository.deleteAll(otpsToExpire);
+
+    return otpsToExpire.size();
+  }
+
+  public void incrementAttempt(Otp otp) {
     otp.incrementAttempt();
+    otpRepository.save(otp);
+  }
+
+  private Otp create(OtpFlowType flow, String dataToVerify, Duration duration) {
+    Otp otp = new Otp();
+    otp.setFlow(flow);
+    otp.setData(dataToVerify);
+    otp.setExpiresAt(Instant.now().plus(duration));
     return otpRepository.save(otp);
   }
 
-  public boolean isOtpValid(Otp otp) {
-    return Instant.now().isBefore(otp.getExpiresAt()) && Status.ACTIVE.equals(otp.getStatus());
-  }
 }

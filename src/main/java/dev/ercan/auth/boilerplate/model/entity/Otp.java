@@ -41,10 +41,6 @@ public class Otp {
 
   private Instant expiresAt;
 
-  @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "varchar(255)")
-  private Status status;
-
   public void incrementAttempt() {
     this.attemptCount++;
   }
@@ -54,12 +50,6 @@ public class Otp {
     if (id == null) {
       id = UUIDv7.randomUUID();
     }
-  }
-
-  public enum Status {
-    ACTIVE,
-    USED,
-    SUPERSEDED
   }
 
 }
