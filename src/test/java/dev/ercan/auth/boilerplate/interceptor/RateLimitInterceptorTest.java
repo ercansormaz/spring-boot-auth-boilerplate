@@ -44,7 +44,6 @@ class RateLimitInterceptorTest {
 
   private static RateLimitProperties properties(Duration window) {
     Policy policy = new Policy();
-    policy.setEnabled(true);
     policy.setLimit(2);
     policy.setWindow(window);
     Map<RateLimitScope, Policy> scopes = new EnumMap<>(RateLimitScope.class);

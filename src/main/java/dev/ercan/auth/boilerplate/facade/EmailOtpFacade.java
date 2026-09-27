@@ -63,7 +63,7 @@ public class EmailOtpFacade {
     Policy policy = rateLimitProperties.getPolicyByTypeAndScope(RateLimitType.EMAIL_OTP_REQUESTED, RateLimitScope.USER);
 
     String rateLimitKey = String.format(RATE_LIMIT_KEY, email);
-    if (policy != null && policy.isEnabled() && !rateLimiter.tryConsume(rateLimitKey, policy.getLimit(), policy.getWindow())) {
+    if (!rateLimiter.tryConsume(rateLimitKey, policy.getLimit(), policy.getWindow())) {
       throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
     }
 

@@ -46,10 +46,6 @@ public class RateLimitInterceptor implements HandlerInterceptor {
       for (RateLimit rateLimit : method.getMethod().getAnnotationsByType(RateLimit.class)) {
         Policy policy = rateLimitProperties.getPolicyByTypeAndScope(rateLimit.type(), rateLimit.scope());
 
-        if (policy == null || !policy.isEnabled()) {
-          continue;
-        }
-
         try {
           consume(request, rateLimit, policy, consumedLimits);
         } catch (IllegalStateException e) {

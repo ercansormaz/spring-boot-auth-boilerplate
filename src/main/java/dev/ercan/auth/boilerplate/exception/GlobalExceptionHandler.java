@@ -27,6 +27,13 @@ public class GlobalExceptionHandler {
     return new ErrorResponse(ErrorType.REQUEST_VALIDATION_ERROR, validationErrors);
   }
 
+  @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+  @ExceptionHandler(value = MissingConfigurationException.class)
+  public ErrorResponse handleMissingConfigurationException(MissingConfigurationException ex) {
+    log.error("[GLOBAL_EXCEPTION_HANDLER] [MISSING_CONFIGURATION] [MESSAGE={}]", ex.getMessage());
+    return new ErrorResponse(ErrorType.INTERNAL_SERVER_ERROR);
+  }
+
   @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED)
   @ExceptionHandler(value = UnsupportedStrategyException.class)
   public ErrorResponse handleUnsupportedStrategyException(UnsupportedStrategyException ex) {

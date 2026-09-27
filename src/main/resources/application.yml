@@ -92,46 +92,36 @@ ratelimit:
   policies:
     anonymous-login-success:
       ip:
-        enabled: true
         limit: 5
         window: 24h
-
       global:
-        enabled: true
         limit: 100
         window: 24h
 
     refresh-token-success:
       ip:
-        enabled: true
         limit: 3
         window: 60s
 
     refresh-token-fail:
       ip:
-        enabled: true
         limit: 5
         window: 24h
 
     apple-login-fail:
       ip:
-        enabled: true
         limit: 5
         window: 24h
 
     google-login-fail:
       ip:
-        enabled: true
         limit: 5
         window: 24h
 
     email-otp-requested:
       ip:
-        enabled: true
         limit: 3
         window: 1h
-
       user:
-        enabled: true
         limit: 3
         window: 24h

@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorType {
 
+  INTERNAL_SERVER_ERROR(1000, "Something went wrong on our end. We will resolve it as soon as possible"),
   REQUEST_VALIDATION_ERROR(1001, "Request validation failed. Please check details."),
   UNSUPPORTED_STRATEGY(1002, "The requested feature is currently not supported."),
 
