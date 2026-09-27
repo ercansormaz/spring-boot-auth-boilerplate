@@ -3,13 +3,16 @@ package dev.ercan.auth.boilerplate.exception;
 import dev.ercan.auth.boilerplate.dto.response.ErrorResponse;
 import dev.ercan.auth.boilerplate.dto.ValidationErrorDto;
 import dev.ercan.auth.boilerplate.model.enums.ErrorType;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -18,11 +21,28 @@ public class GlobalExceptionHandler {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ExceptionHandler(value = MethodArgumentNotValidException.class)
   public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    // @formatter:off
     List<ValidationErrorDto> validationErrors = ex.getBindingResult()
         .getFieldErrors()
         .stream()
         .map(fieldError -> new ValidationErrorDto(fieldError.getField(), fieldError.getDefaultMessage()))
         .toList();
+    // @formatter:on
+
+    return new ErrorResponse(ErrorType.REQUEST_VALIDATION_ERROR, validationErrors);
+  }
+
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ErrorResponse handleConstraintViolation(ConstraintViolationException ex) {
+    // @formatter:off
+    List<ValidationErrorDto> validationErrors = ex.getConstraintViolations()
+        .stream()
+        .map(error -> {
+            List<String> paths = Arrays.asList(error.getPropertyPath().toString().split("\\."));
+            return new ValidationErrorDto(paths.getLast(), error.getMessage());
+        }).collect(Collectors.toList());
+    // @formatter:on
 
     return new ErrorResponse(ErrorType.REQUEST_VALIDATION_ERROR, validationErrors);
   }
