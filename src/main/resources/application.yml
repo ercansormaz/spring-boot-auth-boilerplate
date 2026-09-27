@@ -80,6 +80,10 @@ otp:
     ttl: 3m
     length: 6
     attempt-count: 3
+    retry-delay: 30s
+    per-email-policy:
+      limit: 3
+      window: 24h
 
 email:
   sender-type: console # implement your email sender
@@ -122,6 +126,3 @@ ratelimit:
       ip:
         limit: 3
         window: 1h
-      user:
-        limit: 3
-        window: 24h

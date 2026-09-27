@@ -1,5 +1,6 @@
 package dev.ercan.auth.boilerplate.config.property;
 
+import dev.ercan.auth.boilerplate.model.pojo.RateLimitPolicy;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,5 +18,9 @@ public class EmailOtpProperties {
   int length;
 
   int attemptCount;
+
+  Duration retryDelay;
+
+  RateLimitPolicy perEmailPolicy;
 
 }

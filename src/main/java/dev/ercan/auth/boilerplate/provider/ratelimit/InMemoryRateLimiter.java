@@ -1,8 +1,10 @@
 package dev.ercan.auth.boilerplate.provider.ratelimit;
 
+import dev.ercan.auth.boilerplate.model.pojo.RateLimitResult;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Map;
@@ -20,6 +22,14 @@ public class InMemoryRateLimiter implements RateLimiter {
   }
 
   @Override
+  public RateLimitResult tryConsumeAndGet(String key, int limit, Duration window) {
+    Bucket bucket = getBucket(key, limit, window);
+    ConsumptionProbe result = bucket.tryConsumeAndReturnRemaining(1);
+    return new RateLimitResult(result.isConsumed(), result.getRemainingTokens(),
+        Duration.ofNanos(result.getNanosToWaitForRefill()));
+  }
+
+  @Override
   public void rollback(String key, int limit, Duration window) {
     Bucket bucket = getBucket(key, limit, window);
     bucket.addTokens(1);
@@ -27,10 +37,7 @@ public class InMemoryRateLimiter implements RateLimiter {
 
   private Bucket getBucket(String key, int limit, Duration window) {
     return buckets.computeIfAbsent(key, k -> {
-      Bandwidth limitRule = Bandwidth.builder()
-          .capacity(limit)
-          .refillGreedy(limit, window)
-          .build();
+      Bandwidth limitRule = Bandwidth.builder().capacity(limit).refillGreedy(limit, window).build();
       return Bucket.builder().addLimit(limitRule).build();
     });
   }

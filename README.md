@@ -115,10 +115,10 @@ curl --request POST 'http://localhost:8080/v1/auth/anonymous' \
       "identifier": "ae2bdbcc-367e-4518-b1cd-9b422681409a",
       "platform": "IOS",
       "type": "PHONE",
-      "model": "iPhone",
+      "model": "iPhone 17",
       "language": "en",
       "app_version": "1.0.0",
-      "os_version": "17.0"
+      "os_version": "26.3"
     }
   }'
 ```
@@ -133,7 +133,20 @@ curl --request PUT 'http://localhost:8080/v1/auth/email' \
   --data '{"email":"you@example.com"}'
 ```
 
-The response contains an OTP ID and signature. With the default console sender, find the OTP value in the application log. Submit the returned ID and signature together with that value and the device information:
+Example response:
+
+```json
+{
+  "id": "ae2bdbcc-367e-4518-b1cd-9b422681409a",
+  "signature": "a1b2c3d4e5f6...",
+  "length": 6,
+  "expires_in": 180,
+  "retry_in": 30,
+  "retryable": true
+}
+```
+
+The response contains the OTP ID, signature, expiration time, and retry cooldown information (`retry_in` seconds). With the default console sender, find the OTP value in the application log. Submit the returned ID and signature together with that value and the device information:
 
 ```json
 {
@@ -148,10 +161,10 @@ The response contains an OTP ID and signature. With the default console sender, 
     "identifier": "ae2bdbcc-367e-4518-b1cd-9b422681409a",
     "platform": "IOS",
     "type": "PHONE",
-    "model": "iPhone",
+    "model": "iPhone 17",
     "language": "en",
     "app_version": "1.0.0",
-    "os_version": "17.0"
+    "os_version": "26.3"
   }
 }
 ```
@@ -174,5 +187,6 @@ mvn test
 
 - Replace the console email sender with an implementation of `EmailSender` and configure it with `email.sender-type`.
 - Configure token type and lifetimes, provider client IDs, OTP behavior, and rate-limit policies in `src/main/resources/application.yml`.
+- Adjust email OTP retry cooldown (`otp.email.retry-delay`) and per-email request quota (`otp.email.per-email-policy`) to fit your product requirements.
 - Adapt the account, device, and session behavior to your application's requirements.
 - Before deployment, review secret management, email delivery, database schema management, proxy trust settings, and the single-node limitation.

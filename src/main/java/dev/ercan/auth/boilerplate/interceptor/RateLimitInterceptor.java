@@ -2,8 +2,8 @@ package dev.ercan.auth.boilerplate.interceptor;
 
 import dev.ercan.auth.boilerplate.annotation.RateLimit;
 import dev.ercan.auth.boilerplate.config.property.RateLimitProperties;
-import dev.ercan.auth.boilerplate.config.property.RateLimitProperties.Policy;
 import dev.ercan.auth.boilerplate.exception.RateLimitExceedException;
+import dev.ercan.auth.boilerplate.model.pojo.RateLimitPolicy;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +44,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     try {
       for (RateLimit rateLimit : method.getMethod().getAnnotationsByType(RateLimit.class)) {
-        Policy policy = rateLimitProperties.getPolicyByTypeAndScope(rateLimit.type(), rateLimit.scope());
+        RateLimitPolicy policy = rateLimitProperties.getPolicyByTypeAndScope(rateLimit.type(), rateLimit.scope());
 
         try {
           consume(request, rateLimit, policy, consumedLimits);
@@ -93,16 +93,16 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     consumedLimits.clear();
   }
 
-  private void consume(HttpServletRequest request, RateLimit rateLimit, Policy policy,
+  private void consume(HttpServletRequest request, RateLimit rateLimit, RateLimitPolicy policy,
       List<ConsumedLimit> consumedLimits) {
     String key = keyResolver.resolve(request, rateLimit);
 
-    if (!rateLimiter.tryConsume(key, policy.getLimit(), policy.getWindow())) {
+    if (!rateLimiter.tryConsume(key, policy.limit(), policy.window())) {
       rollback(consumedLimits);
       throw new RateLimitExceedException(rateLimit.type().getErrorType());
     }
 
-    consumedLimits.add(new ConsumedLimit(key, policy.getLimit(), policy.getWindow(), rateLimit.statuses()));
+    consumedLimits.add(new ConsumedLimit(key, policy.limit(), policy.window(), rateLimit.statuses()));
   }
 
   private boolean shouldCountRequest(int currentStatusCode, HttpStatus[] configuredStatuses) {

@@ -1,16 +1,15 @@
 package dev.ercan.auth.boilerplate.facade;
 
 import dev.ercan.auth.boilerplate.config.property.EmailOtpProperties;
-import dev.ercan.auth.boilerplate.config.property.RateLimitProperties;
-import dev.ercan.auth.boilerplate.config.property.RateLimitProperties.Policy;
 import dev.ercan.auth.boilerplate.dto.request.OtpRequest;
 import dev.ercan.auth.boilerplate.dto.response.OtpResponse;
 import dev.ercan.auth.boilerplate.exception.RateLimitExceedException;
 import dev.ercan.auth.boilerplate.model.entity.Otp;
 import dev.ercan.auth.boilerplate.model.enums.OtpFlowType;
-import dev.ercan.auth.boilerplate.model.enums.RateLimitScope;
 import dev.ercan.auth.boilerplate.model.enums.RateLimitType;
 import dev.ercan.auth.boilerplate.model.pojo.OtpDetail;
+import dev.ercan.auth.boilerplate.model.pojo.RateLimitPolicy;
+import dev.ercan.auth.boilerplate.model.pojo.RateLimitResult;
 import dev.ercan.auth.boilerplate.service.OtpService;
 import dev.ercan.auth.boilerplate.service.port.EmailSender;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
@@ -37,8 +36,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @RequiredArgsConstructor
 public class EmailOtpFacade {
 
-  private static final String COOLDOWN_LIMIT_KEY = "otp:email:cooldown:%s:%s";
-  private static final String RATE_LIMIT_KEY = "otp:email:%s";
+  private static final String RETRY_LIMIT_KEY = "otp:email:retry:%s:%s";
+  private static final String RATE_LIMIT_KEY = "otp:email:%s:%s";
   private static final String HMAC_DATA = "%s:%s:%s:%s";
 
   @Value("${otp.encryption.key}")
@@ -49,39 +48,37 @@ public class EmailOtpFacade {
   private final RateLimiter rateLimiter;
 
   private final EmailOtpProperties emailOtpProperties;
-  private final RateLimitProperties rateLimitProperties;
 
-  public OtpResponse createAndSendOtp(OtpFlowType flow, String email) {
-    email = EmailNormalizer.normalize(email);
+  public OtpResponse createAndSendOtp(OtpFlowType flow, String rawEmail) {
+    final String email = EmailNormalizer.normalize(rawEmail);
 
-    String coolDownKey = String.format(COOLDOWN_LIMIT_KEY, flow.name(), email);
-
-    if (!rateLimiter.tryConsume(coolDownKey, 1, Duration.ofSeconds(30L))) {
-      throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
-    }
-
-    Policy policy = rateLimitProperties.getPolicyByTypeAndScope(RateLimitType.EMAIL_OTP_REQUESTED, RateLimitScope.USER);
-
-    String rateLimitKey = String.format(RATE_LIMIT_KEY, email);
-    if (!rateLimiter.tryConsume(rateLimitKey, policy.getLimit(), policy.getWindow())) {
-      throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
-    }
+    RateLimitResult rateLimitResult = consumeRateLimits(flow, email);
 
     String otpValue = RandomUtil.number(emailOtpProperties.getLength());
-
     Otp otp = otpService.replaceExistingOtp(flow, email, emailOtpProperties.getTtl());
-    OtpDetail otpDetail = createSignedOtpDetail(otp, otpValue, emailOtpProperties.getTtl());
+
+    // @formatter:off
+    OtpDetail otpDetail = createSignedOtpDetail(
+        otp,
+        otpValue,
+        emailOtpProperties.getTtl(),
+        rateLimitResult.remainingTokens(),
+        emailOtpProperties.getRetryDelay()
+    );
+    // @formatter:on
 
     emailSender.sendOtp(otpDetail);
 
     return new OtpResponse(otpDetail);
+
   }
 
   @Transactional
   public boolean validate(OtpRequest otpRequest, OtpFlowType flow, String dataToVerify) {
     Otp otp = otpService.getById(otpRequest.getId());
 
-    if (Objects.isNull(otp) || Instant.now().isAfter(otp.getExpiresAt()) || otp.getAttemptCount() >= emailOtpProperties.getAttemptCount()) {
+    if (Objects.isNull(otp) || Instant.now().isAfter(otp.getExpiresAt())
+        || otp.getAttemptCount() >= emailOtpProperties.getAttemptCount()) {
       return false;
     }
 
@@ -100,9 +97,31 @@ public class EmailOtpFacade {
     return false;
   }
 
-  private OtpDetail createSignedOtpDetail(Otp otp, String value, Duration duration) {
+  private RateLimitResult consumeRateLimits(OtpFlowType flow, String email) {
+    String retryLimitKey = String.format(RETRY_LIMIT_KEY, flow.name(), email);
+    Duration retryDelay = emailOtpProperties.getRetryDelay();
+
+    if (!rateLimiter.tryConsume(retryLimitKey, 1, retryDelay)) {
+      throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
+    }
+
+    RateLimitPolicy policy = emailOtpProperties.getPerEmailPolicy();
+    String rateLimitKey = String.format(RATE_LIMIT_KEY, flow.name(), email);
+
+    RateLimitResult result = rateLimiter.tryConsumeAndGet(rateLimitKey, policy.limit(), policy.window());
+    if (!result.consumed()) {
+      rateLimiter.rollback(retryLimitKey, 1, retryDelay);
+      throw new RateLimitExceedException(RateLimitType.EMAIL_OTP_REQUESTED.getErrorType());
+    }
+
+    return result;
+  }
+
+  private OtpDetail createSignedOtpDetail(Otp otp, String value, Duration duration, long remainingRetryCount,
+      Duration retryDuration) {
     String signature = sign(otp.getId(), otp.getFlow(), otp.getData(), value);
-    return new OtpDetail(otp.getId(), signature, otp.getData(), value, otp.getFlow(), value.length(), duration.toSeconds());
+    return new OtpDetail(otp.getId(), signature, otp.getData(), value, otp.getFlow(), value.length(),
+        duration.toSeconds(), remainingRetryCount, retryDuration.toSeconds());
   }
 
   private String sign(UUID otpId, OtpFlowType flow, String dataToVerify, String value) {

@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 
 import dev.ercan.auth.boilerplate.annotation.RateLimit;
 import dev.ercan.auth.boilerplate.config.property.RateLimitProperties;
-import dev.ercan.auth.boilerplate.config.property.RateLimitProperties.Policy;
 import dev.ercan.auth.boilerplate.model.enums.RateLimitScope;
 import dev.ercan.auth.boilerplate.model.enums.RateLimitType;
+import dev.ercan.auth.boilerplate.model.pojo.RateLimitPolicy;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -43,12 +43,10 @@ class RateLimitInterceptorTest {
   }
 
   private static RateLimitProperties properties(Duration window) {
-    Policy policy = new Policy();
-    policy.setLimit(2);
-    policy.setWindow(window);
-    Map<RateLimitScope, Policy> scopes = new EnumMap<>(RateLimitScope.class);
+    RateLimitPolicy policy = new RateLimitPolicy(2, window);
+    Map<RateLimitScope, RateLimitPolicy> scopes = new EnumMap<>(RateLimitScope.class);
     scopes.put(RateLimitScope.GLOBAL, policy);
-    Map<RateLimitType, Map<RateLimitScope, Policy>> policies = new EnumMap<>(RateLimitType.class);
+    Map<RateLimitType, Map<RateLimitScope, RateLimitPolicy>> policies = new EnumMap<>(RateLimitType.class);
     policies.put(RateLimitType.EMAIL_OTP_REQUESTED, scopes);
     RateLimitProperties properties = new RateLimitProperties();
     properties.setPolicies(policies);
