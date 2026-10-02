@@ -18,12 +18,17 @@ public enum ErrorType {
   INVALID_APPLE_TOKEN(1013, "Invalid or expired Apple token."),
   INVALID_OTP(1014, "Invalid or expired OTP."),
 
+  INVALID_QR_CODE(1015, "Invalid or already used QR code."),
+  EXPIRED_QR_CODE(1016, "QR code has expired. Please refresh the web page."),
+
   ANONYMOUS_LOGIN_LIMIT_EXCEED(3001, "Too many anonymous login. Please try again later."),
   REFRESH_TOKEN_SUCCESS_LIMIT_EXCEED(3002, "Too many refresh token login. Please try again later."),
   REFRESH_TOKEN_FAIL_LIMIT_EXCEED(3003, "Too many failed refresh token login. Please try again later."),
   APPLE_LOGIN_FAIL_LIMIT_EXCEED(3004, "Too many failed apple login. Please try again later."),
   GOOGLE_LOGIN_FAIL_LIMIT_EXCEED(3005, "Too many failed google login. Please try again later."),
   EMAIL_OTP_LIMIT_EXCEED(3006, "Too many requests. Please try again later."),
+  QR_IMAGE_GENERATE_LIMIT_EXCEED(3007, "Too many QR requests. Please try again later."),
+  QR_AUTH_LIMIT_EXCEED(3008, "Too many QR auth requests. Please try again later."),
 
   ;
 

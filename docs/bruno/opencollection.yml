@@ -39,9 +39,11 @@ request:
     - name: token-type
       value: Bearer
     - name: access-token
-      value: gAAAAABqsYvOqmEqWT0aPJp6HY0IlKQLn3yAtB06AKvZUyb4v80ieT46H8ylEa8F7BOZ870B1AmHaSyWo6-Uvfs4XwS3zOVzBzTCu5C7ekrVFSRy9fii5m4y35cAdNk3L8GqJK7yS17HAqWjpZ9NMgfIUJG0dxcDyeB_miIGBeefZ9Z1ICJ9P8yRRxjlwgCTH9u79j9FN5crMP_CrXeqNVRxXAZ--DIGXA==
+      value: gAAAAABqv_5YuR55c3uhKfcui0KBDQjzNI922LrvxSRDH76cvQGxlSamgSgDOP_a8Y9BaGJv2fjwxFIM37OtdERh6FCXxi9Z3tcM1COghsgd4L9YEeWCg6QyKxhSp4ymJbnDp42H3Dest4apWCbgkX-omKpeZZNBrEsbMZj6OKVEVCMtiQRTFzcvCMM2aKmYMAU954avDF6vnR0GQTak9oF0YLr7rKekaw==
     - name: refresh-token
-      value: gAAAAABqsYvOWmfew5cKxytWKGGPewbh1egkX35CTHzddnmgqzRpBkpjSphMxjTN0MrWGP4vYPohcwEixlllnq5vlsZDPWxiKIyegTTOcvFH0Tr5ddeahWgqEZM79URSIYS-lYamyqw9Q2Wg6yPtu2_VF9dd4Lh71Mh6lHrEZVRfUTzNQmZw4LhyVqwGyM9NTR_wADkILbDOC4mjUyB32VgjEKGmXg_sWA==
+      value: gAAAAABqv_5Yb1NyqLADdKfXe1ZIzccQ-DYGCoPsE4jlIJ5WV4yU9eSZGTr0nKt8z8E9cw9b2jkaU5mVfSws4uGyc6SzutNU_1v9734UdLUSX9siNs31YULuNul9LRiByigEKUpuDvCX4bOhkcEEqNFXaymbADF1cbTD0tPGF9bGtWWGG8XShbgdPPwDot9eXUy0qmqvEzBQGRBcn2bGoaxc9BTd0AqREw==
+    - name: qr-id
+      value: 01a0fdf9-5a0c-72de-ba1d-5fd4095a0523
 bundled: false
 extensions:
   bruno:

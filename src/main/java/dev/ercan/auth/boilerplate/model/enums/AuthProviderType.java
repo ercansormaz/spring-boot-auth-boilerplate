@@ -7,6 +7,7 @@ public enum AuthProviderType {
   GOOGLE,
   APPLE,
   EMAIL,
+  QR,
 
   ;
 

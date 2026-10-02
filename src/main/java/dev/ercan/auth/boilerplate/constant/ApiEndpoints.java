@@ -10,6 +10,7 @@ public class ApiEndpoints {
   public static final String GOOGLE_AUTH = "/v1/auth/google";
   public static final String APPLE_AUTH = "/v1/auth/apple";
   public static final String EMAIL_AUTH = "/v1/auth/email";
+  public static final String QR_AUTH = "/v1/auth/qr";
   public static final String SESSIONS = "/v1/auth/sessions";
   public static final String LOGOUT = "/v1/auth/logout";
 

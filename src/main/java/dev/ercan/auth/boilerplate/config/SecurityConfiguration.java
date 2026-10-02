@@ -43,6 +43,8 @@ public class SecurityConfiguration {
         .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.POST, ApiEndpoints.APPLE_AUTH).permitAll())
         .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.PUT, ApiEndpoints.EMAIL_AUTH).permitAll())
         .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.POST, ApiEndpoints.EMAIL_AUTH).permitAll())
+        .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.GET, ApiEndpoints.QR_AUTH).permitAll())
+        .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.POST, ApiEndpoints.QR_AUTH).permitAll())
         .authorizeHttpRequests(a -> a.anyRequest().authenticated())
         .exceptionHandling(ex -> ex.authenticationEntryPoint(new CustomAuthenticationEntryPoint(jsonMapper)))
         .exceptionHandling(ex -> ex.accessDeniedHandler(new CustomAccessDeniedHandler(jsonMapper)));

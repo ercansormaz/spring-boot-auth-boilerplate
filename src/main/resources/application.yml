@@ -55,6 +55,15 @@ auth:
   email:
     enabled: true
 
+  qr:
+    enabled: true
+    ttl: 30s
+    poll-timeout: 15s
+    cleaner-job:
+      cron: "0 30 * * * *"
+      fetch-count: 10
+      max-iteration: 50
+
   google:
     enabled: true
     client-id: ${AUTH_GOOGLE_CLIENT_ID}
@@ -123,3 +132,9 @@ ratelimit:
       ip:
         limit: 3
         window: 1h
+
+    qr-image-generate-success:
+      ip:
+        limit: 5
+        window: 1m
+

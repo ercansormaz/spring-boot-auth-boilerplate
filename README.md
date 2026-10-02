@@ -11,6 +11,7 @@ This repository contains the backend REST API; it does not include web or mobile
 
 - Anonymous authentication
 - Email one-time-password (OTP) authentication
+- QR-code authentication for signing in a second device
 - Google and Apple ID-token authentication
 - Access and refresh tokens, with Fernet or JWT token formats
 - Device tracking and active-session listing
@@ -89,6 +90,9 @@ All authentication requests that create or refresh a session include device meta
 | `POST` | `/v1/auth/email` | Verify an OTP and authenticate |
 | `POST` | `/v1/auth/google` | Authenticate with a Google ID token |
 | `POST` | `/v1/auth/apple` | Authenticate with an Apple ID token |
+| `GET` | `/v1/auth/qr` | Generate a QR image for sign-in |
+| `POST` | `/v1/auth/qr` | Poll for QR approval and authenticate |
+| `PUT` | `/v1/auth/qr` | Approve sign-in using an authenticated session |
 | `POST` | `/v1/auth/refresh` | Refresh tokens |
 | `DELETE` | `/v1/auth/logout` | Revoke the current device session |
 | `GET` | `/v1/auth/sessions` | List active sessions |
@@ -167,9 +171,50 @@ The response contains the signature, expiration time, and retry cooldown informa
 
 Send this body as JSON in a `POST` request to `/v1/auth/email`. Google and Apple authentication similarly accept an `id_token` and device details; the token must be issued for the configured client.
 
+### Example: QR authentication flow
+
+QR authentication is enabled by default and can be disabled with `auth.qr.enabled` in `src/main/resources/application.yml`. The client signing in on a new device first requests an image:
+
+```bash
+curl --include 'http://localhost:8080/v1/auth/qr'
+```
+
+The response body is a PNG image. Save or display it, and retain `X-Qr-Id` for the polling request. `X-Expires-At` contains the QR code's expiration time as Unix epoch seconds, so clients can stop polling when the code expires. `X-Poll-Timeout` contains the long-poll duration in seconds. The QR payload itself is signed and should be passed unchanged to the approval endpoint.
+
+On a device that is already authenticated, scan the QR image and send its scanned text as `data`:
+
+```bash
+curl --request PUT 'http://localhost:8080/v1/auth/qr' \
+  --header 'Authorization: <token-type> <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data '{"data":"<scanned-qr-payload>"}'
+```
+
+A successful approval returns `204 No Content`. The new device polls with the QR ID and its device metadata:
+
+```bash
+curl --include --request POST 'http://localhost:8080/v1/auth/qr' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "id": "<value-from-X-Qr-Id>",
+    "remember": true,
+    "device": {
+      "identifier": "ae2bdbcc-367e-4518-b1cd-9b422681409a",
+      "platform": "IOS",
+      "type": "PHONE",
+      "model": "iPhone 17",
+      "language": "en",
+      "app_version": "1.0.0",
+      "os_version": "26.3"
+    }
+  }'
+```
+
+When approval is received, the poll responds with the standard authentication token JSON. If approval has not arrived within the poll interval, the response is `202 Accepted` with no body; send another poll request while the QR code remains valid. The QR image endpoint also accepts optional `width` and `height` query parameters from `100` to `1024` (default `250`). The default QR lifetime is `30s`, configured by `auth.qr.ttl`; the polling interval is configured by `auth.qr.poll-timeout`.
+
 ## Bruno collection
 
-Import or open the collection in `docs/bruno` with [Bruno](https://www.usebruno.com/). Select the `[LOCAL]` environment to use `http://localhost:8080`. The collection includes example requests for the authentication, logout, and session endpoints, and scripts that carry tokens between requests.
+Import or open the collection in `docs/bruno` with [Bruno](https://www.usebruno.com/). Select the `[LOCAL]` environment to use `http://localhost:8080`. The collection includes example requests for authentication (including QR sign-in), logout, and session endpoints, and scripts that carry tokens and QR IDs between requests.
 
 ## Tests
 

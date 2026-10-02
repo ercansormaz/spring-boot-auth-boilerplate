@@ -1,6 +1,7 @@
 package dev.ercan.auth.boilerplate.job;
 
 import dev.ercan.auth.boilerplate.facade.AuthenticationTokenFacade;
+import dev.ercan.auth.boilerplate.service.QrCodeService;
 import dev.ercan.auth.boilerplate.service.OtpService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -120,6 +121,42 @@ class CleanerJobsTest {
     verify(otpService, times(3)).deleteExpiredOtps(40);
   }
 
+  @Test
+  void qrCodeCleanerStopsWhenNoExpiredQrCodesRemain() {
+    QrCodeService qrCodeService = mock(QrCodeService.class);
+    when(qrCodeService.deleteExpiredQrCodes(15)).thenReturn(0);
+    QrCodeCleanerJob job = qrCodeCleaner(qrCodeService, 15, 5);
+
+    job.execute();
+
+    verify(qrCodeService).deleteExpiredQrCodes(15);
+  }
+
+  @Test
+  void qrCodeCleanerStopsAtMaximumIterationCount() {
+    QrCodeService qrCodeService = mock(QrCodeService.class);
+    when(qrCodeService.deleteExpiredQrCodes(15)).thenReturn(15);
+    QrCodeCleanerJob job = qrCodeCleaner(qrCodeService, 15, 3);
+
+    job.execute();
+
+    verify(qrCodeService, times(3)).deleteExpiredQrCodes(15);
+  }
+
+  @Test
+  void qrCodeCleanerContinuesAfterIterationFailure() {
+    QrCodeService qrCodeService = mock(QrCodeService.class);
+    when(qrCodeService.deleteExpiredQrCodes(15))
+        .thenThrow(new IllegalStateException("temporary failure"))
+        .thenReturn(1)
+        .thenReturn(0);
+    QrCodeCleanerJob job = qrCodeCleaner(qrCodeService, 15, 5);
+
+    job.execute();
+
+    verify(qrCodeService, times(3)).deleteExpiredQrCodes(15);
+  }
+
   private static AccessTokenCleanerJob accessTokenCleaner(
       AuthenticationTokenFacade facade, int fetchCount, int maxIteration) {
     AccessTokenCleanerJob job = new AccessTokenCleanerJob(facade);
@@ -138,6 +175,13 @@ class CleanerJobsTest {
 
   private static OtpCleanerJob otpCleaner(OtpService service, int fetchCount, int maxIteration) {
     OtpCleanerJob job = new OtpCleanerJob(service);
+    ReflectionTestUtils.setField(job, "fetchCount", fetchCount);
+    ReflectionTestUtils.setField(job, "maxIteration", maxIteration);
+    return job;
+  }
+
+  private static QrCodeCleanerJob qrCodeCleaner(QrCodeService service, int fetchCount, int maxIteration) {
+    QrCodeCleanerJob job = new QrCodeCleanerJob(service);
     ReflectionTestUtils.setField(job, "fetchCount", fetchCount);
     ReflectionTestUtils.setField(job, "maxIteration", maxIteration);
     return job;
