@@ -28,6 +28,8 @@ public class Otp {
   @Id
   private UUID id;
 
+  private UUID nonce;
+
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "varchar(255)")
   private OtpFlowType flow;

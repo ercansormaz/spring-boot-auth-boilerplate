@@ -24,15 +24,15 @@ import dev.ercan.auth.boilerplate.service.OtpService;
 import dev.ercan.auth.boilerplate.service.port.EmailSender;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import dev.ercan.auth.boilerplate.util.HMacUtil;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.mockito.ArgumentCaptor;
 
 class EmailOtpFacadeTest {
-
-  private static final String ENCRYPTION_KEY = "otp-test-key";
 
   @Test
   void validateDeletesOtpWhenSignatureMatches() throws Exception {
@@ -55,7 +55,8 @@ class EmailOtpFacadeTest {
     Otp otp = otp(OtpFlowType.AUTHENTICATION, "user@example.com");
     when(otpService.getById(otp.getId())).thenReturn(otp);
     OtpRequest request = otpRequest(otp, "123456");
-    request.setSignature("invalid-signature");
+    String rawWrongSignature = otp.getId() + ":invalid-hmac";
+    request.setSignature(Base64.getEncoder().encodeToString(rawWrongSignature.getBytes(StandardCharsets.UTF_8)));
 
     assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
 
@@ -74,6 +75,107 @@ class EmailOtpFacadeTest {
 
     verify(otpService, never()).incrementAttempt(otp);
     verify(otpService, never()).delete(otp);
+  }
+
+  @Test
+  void validateDoesNotMutateOtpWhenFlowDoesNotMatch() throws Exception {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    Otp otp = otp(OtpFlowType.AUTHENTICATION, "user@example.com");
+    OtpRequest request = otpRequest(otp, "123456");
+    otp.setFlow(null);
+    when(otpService.getById(otp.getId())).thenReturn(otp);
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).incrementAttempt(otp);
+    verify(otpService, never()).delete(otp);
+  }
+
+  @Test
+  void validateReturnsFalseWhenSignatureIsNotBase64() {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    OtpRequest request = new OtpRequest();
+    request.setValue("123456");
+    request.setSignature("!not-base64!");
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).getById(any());
+    verify(otpService, never()).incrementAttempt(any());
+  }
+
+  @Test
+  void validateReturnsFalseWhenSignatureFormatIsInvalid() {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    OtpRequest request = new OtpRequest();
+    request.setValue("123456");
+    request.setSignature(Base64.getEncoder().encodeToString("just-one-part".getBytes(StandardCharsets.UTF_8)));
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).getById(any());
+    verify(otpService, never()).incrementAttempt(any());
+  }
+
+  @Test
+  void validateReturnsFalseWhenSignatureOtpIdIsNotValidUuid() {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    OtpRequest request = new OtpRequest();
+    request.setValue("123456");
+    request.setSignature(Base64.getEncoder().encodeToString("not-a-uuid:hmac".getBytes(StandardCharsets.UTF_8)));
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).getById(any());
+    verify(otpService, never()).incrementAttempt(any());
+  }
+
+  @Test
+  void validateReturnsFalseWhenOtpNotFound() throws Exception {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    Otp otp = otp(OtpFlowType.AUTHENTICATION, "user@example.com");
+    when(otpService.getById(otp.getId())).thenReturn(null);
+    OtpRequest request = otpRequest(otp, "123456");
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).incrementAttempt(any());
+    verify(otpService, never()).delete(any());
+  }
+
+  @Test
+  void validateReturnsFalseWhenOtpExpired() throws Exception {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    Otp otp = otp(OtpFlowType.AUTHENTICATION, "user@example.com");
+    otp.setExpiresAt(Instant.now().minusSeconds(10));
+    when(otpService.getById(otp.getId())).thenReturn(otp);
+    OtpRequest request = otpRequest(otp, "123456");
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).incrementAttempt(any());
+    verify(otpService, never()).delete(any());
+  }
+
+  @Test
+  void validateReturnsFalseWhenAttemptLimitReached() throws Exception {
+    OtpService otpService = mock(OtpService.class);
+    EmailOtpFacade facade = facade(otpService);
+    Otp otp = otp(OtpFlowType.AUTHENTICATION, "user@example.com");
+    otp.setAttemptCount(3);
+    when(otpService.getById(otp.getId())).thenReturn(otp);
+    OtpRequest request = otpRequest(otp, "123456");
+
+    assertFalse(facade.validate(request, OtpFlowType.AUTHENTICATION, "user@example.com"));
+
+    verify(otpService, never()).incrementAttempt(any());
+    verify(otpService, never()).delete(any());
   }
 
   @Test
@@ -100,7 +202,19 @@ class EmailOtpFacadeTest {
     assertEquals(Long.valueOf(retryDelay.toSeconds()), response.getRetryIn());
     assertEquals(properties.getTtl().toSeconds(), response.getExpiresIn());
     verify(otpService).replaceExistingOtp(OtpFlowType.AUTHENTICATION, "user@example.com", properties.getTtl());
-    verify(emailSender).sendOtp(any(OtpDetail.class));
+
+    ArgumentCaptor<OtpDetail> captor = ArgumentCaptor.forClass(OtpDetail.class);
+    verify(emailSender).sendOtp(captor.capture());
+    OtpDetail detail = captor.getValue();
+    assertEquals(otp.getData(), detail.dataToVerify());
+    assertEquals(OtpFlowType.AUTHENTICATION, detail.flow());
+    assertEquals(properties.getLength(), detail.length());
+    assertEquals(properties.getTtl(), detail.ttl());
+    assertEquals(properties.getRetryDelay(), detail.retryDelay());
+    assertEquals(2, detail.remainingRetryCount());
+
+    String decodedSignature = new String(Base64.getDecoder().decode(detail.signature()), StandardCharsets.UTF_8);
+    assertTrue(decodedSignature.startsWith(otp.getId() + ":"));
   }
 
   @Test
@@ -166,13 +280,11 @@ class EmailOtpFacadeTest {
 
   private static EmailOtpFacade facade(OtpService otpService, EmailSender emailSender,
       RateLimiter rateLimiter, EmailOtpProperties otpProperties) {
-    EmailOtpFacade facade = new EmailOtpFacade(
+    return new EmailOtpFacade(
         otpService,
         emailSender,
         rateLimiter,
         otpProperties);
-    ReflectionTestUtils.setField(facade, "encryptionKey", ENCRYPTION_KEY);
-    return facade;
   }
 
   private static EmailOtpProperties otpProperties() {
@@ -188,6 +300,7 @@ class EmailOtpFacadeTest {
   private static Otp otp(OtpFlowType flow, String data) {
     Otp otp = new Otp();
     otp.setId(UUID.randomUUID());
+    otp.setNonce(UUID.randomUUID());
     otp.setFlow(flow);
     otp.setData(data);
     otp.setExpiresAt(Instant.now().plusSeconds(300));
@@ -196,11 +309,12 @@ class EmailOtpFacadeTest {
 
   private static OtpRequest otpRequest(Otp otp, String value) throws Exception {
     OtpRequest request = new OtpRequest();
-    request.setId(otp.getId());
     request.setValue(value);
-    request.setSignature(HMacUtil.hmac(
-        ENCRYPTION_KEY,
-        String.format("%s:%s:%s:%s", otp.getId(), otp.getFlow().name(), otp.getData(), value)));
+    String rawSignature = otp.getId() + ":" + HMacUtil.hmac(
+        otp.getNonce().toString(),
+        String.format("%s:%s:%s:%s", otp.getId(), otp.getFlow().name(), otp.getData(), value));
+    String encodedSignature = Base64.getEncoder().encodeToString(rawSignature.getBytes(StandardCharsets.UTF_8));
+    request.setSignature(encodedSignature);
     return request;
   }
 }

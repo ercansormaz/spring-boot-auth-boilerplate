@@ -1,6 +1,7 @@
 package dev.ercan.auth.boilerplate.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,6 +56,7 @@ class OtpServiceTest {
     assertSame(replacement, savedOtp.getValue());
     assertEquals(OtpFlowType.AUTHENTICATION, replacement.getFlow());
     assertEquals("user@example.com", replacement.getData());
+    assertNotNull(replacement.getNonce());
     assertTrue(replacement.getExpiresAt().isAfter(before.plusSeconds(170)));
     assertTrue(replacement.getExpiresAt().isBefore(before.plusSeconds(190)));
   }
@@ -84,6 +86,7 @@ class OtpServiceTest {
     verify(repository).deleteAll(List.of());
     verify(repository).save(replacement);
     assertEquals("new@example.com", replacement.getData());
+    assertNotNull(replacement.getNonce());
   }
 
   @Test

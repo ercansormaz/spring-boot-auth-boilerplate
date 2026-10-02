@@ -60,6 +60,7 @@ public class OtpService {
     Otp otp = new Otp();
     otp.setFlow(flow);
     otp.setData(dataToVerify);
+    otp.setNonce(UUID.randomUUID());
     otp.setExpiresAt(Instant.now().plus(duration));
     return otpRepository.save(otp);
   }

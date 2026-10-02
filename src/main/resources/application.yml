@@ -68,9 +68,6 @@ auth:
     jwk-url: https://appleid.apple.com/auth/keys
 
 otp:
-  encryption:
-    key: ${OTP_ENCRYPTION_KEY}
-
   cleaner-job:
     cron: "0 20 * * * *"
     fetch-count: 10

@@ -6,14 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.ercan.auth.boilerplate.model.pojo.OtpDetail;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.UUID;
 
 @Getter
 @Setter
 @JsonInclude(Include.NON_NULL)
 public class OtpResponse {
 
-  private UUID id;
   private String signature;
   private int length;
   @JsonProperty("expires_in")
@@ -23,13 +21,12 @@ public class OtpResponse {
   private boolean retryable;
 
   public OtpResponse(OtpDetail otpDetail) {
-    this.id = otpDetail.id();
     this.signature = otpDetail.signature();
     this.length = otpDetail.length();
-    this.expiresIn = otpDetail.expiresIn();
+    this.expiresIn = otpDetail.ttl().toSeconds();
     if (otpDetail.flow().isRetryable() && otpDetail.remainingRetryCount() > 0) {
-      this.retryable = otpDetail.flow().isRetryable();
-      this.retryIn = otpDetail.retryIn();
+      this.retryable = true;
+      this.retryIn = otpDetail.retryDelay().toSeconds();
     }
   }
 

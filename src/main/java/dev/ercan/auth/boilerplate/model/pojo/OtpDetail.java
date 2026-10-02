@@ -1,9 +1,9 @@
 package dev.ercan.auth.boilerplate.model.pojo;
 
 import dev.ercan.auth.boilerplate.model.enums.OtpFlowType;
-import java.util.UUID;
+import java.time.Duration;
 
-public record OtpDetail(UUID id, String signature, String dataToVerify, String value, OtpFlowType flow, int length,
-                        long expiresIn, long remainingRetryCount, long retryIn) {
+public record OtpDetail(String signature, String dataToVerify, String value, OtpFlowType flow, int length, Duration ttl,
+                        long remainingRetryCount, Duration retryDelay) {
 
 }

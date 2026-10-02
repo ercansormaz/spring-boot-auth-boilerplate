@@ -1,5 +1,5 @@
 info:
-  name: Email Login
+  name: Get Email OTP
   type: http
   seq: 5
 
@@ -20,7 +20,6 @@ runtime:
       code: |-
         if (res.getStatus() === 202) {
           let data = res.getBody();
-          bru.setCollectionVar("otp.id", data.id)
           bru.setCollectionVar("otp.signature", data.signature)
         }
 

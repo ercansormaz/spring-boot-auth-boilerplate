@@ -18,14 +18,15 @@ import dev.ercan.auth.boilerplate.util.HMacUtil;
 import dev.ercan.auth.boilerplate.util.RandomUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,9 +40,6 @@ public class EmailOtpFacade {
   private static final String RETRY_LIMIT_KEY = "otp:email:retry:%s:%s";
   private static final String RATE_LIMIT_KEY = "otp:email:%s:%s";
   private static final String HMAC_DATA = "%s:%s:%s:%s";
-
-  @Value("${otp.encryption.key}")
-  private String encryptionKey;
 
   private final OtpService otpService;
   private final EmailSender emailSender;
@@ -57,15 +55,7 @@ public class EmailOtpFacade {
     String otpValue = RandomUtil.number(emailOtpProperties.getLength());
     Otp otp = otpService.replaceExistingOtp(flow, email, emailOtpProperties.getTtl());
 
-    // @formatter:off
-    OtpDetail otpDetail = createSignedOtpDetail(
-        otp,
-        otpValue,
-        emailOtpProperties.getTtl(),
-        rateLimitResult.remainingTokens(),
-        emailOtpProperties.getRetryDelay()
-    );
-    // @formatter:on
+    OtpDetail otpDetail = encryptAndGetOtpDetail(otp, otpValue, rateLimitResult.remainingTokens());
 
     emailSender.sendOtp(otpDetail);
 
@@ -75,7 +65,26 @@ public class EmailOtpFacade {
 
   @Transactional
   public boolean validate(OtpRequest otpRequest, OtpFlowType flow, String dataToVerify) {
-    Otp otp = otpService.getById(otpRequest.getId());
+    String decodedSignature;
+    try {
+      decodedSignature = new String(Base64.getDecoder().decode(otpRequest.getSignature()), StandardCharsets.UTF_8);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+
+    String[] parts = decodedSignature.trim().split(":");
+    if (parts.length != 2) {
+      return false;
+    }
+
+    UUID otpId;
+    try {
+      otpId = UUID.fromString(parts[0]);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+
+    Otp otp = otpService.getById(otpId);
 
     if (Objects.isNull(otp) || Instant.now().isAfter(otp.getExpiresAt())
         || otp.getAttemptCount() >= emailOtpProperties.getAttemptCount()) {
@@ -86,8 +95,8 @@ public class EmailOtpFacade {
       return false;
     }
 
-    String hmac = sign(otp.getId(), flow, dataToVerify, otpRequest.getValue());
-    if (MessageDigest.isEqual(otpRequest.getSignature().getBytes(UTF_8), hmac.getBytes(UTF_8))) {
+    String hmac = encrypt(otp, otpRequest.getValue());
+    if (MessageDigest.isEqual(parts[1].getBytes(UTF_8), hmac.getBytes(UTF_8))) {
       otpService.delete(otp);
       return true;
     }
@@ -117,16 +126,17 @@ public class EmailOtpFacade {
     return result;
   }
 
-  private OtpDetail createSignedOtpDetail(Otp otp, String value, Duration duration, long remainingRetryCount,
-      Duration retryDuration) {
-    String signature = sign(otp.getId(), otp.getFlow(), otp.getData(), value);
-    return new OtpDetail(otp.getId(), signature, otp.getData(), value, otp.getFlow(), value.length(),
-        duration.toSeconds(), remainingRetryCount, retryDuration.toSeconds());
+  private OtpDetail encryptAndGetOtpDetail(Otp otp, String value, long remainingRetryCount) {
+    String rawSignature = otp.getId() + ":" + encrypt(otp, value);
+    String encodedSignature = Base64.getEncoder().withoutPadding().encodeToString(rawSignature.getBytes(UTF_8));
+    return new OtpDetail(encodedSignature, otp.getData(), value, otp.getFlow(), value.length(),
+        emailOtpProperties.getTtl(), remainingRetryCount, emailOtpProperties.getRetryDelay());
   }
 
-  private String sign(UUID otpId, OtpFlowType flow, String dataToVerify, String value) {
+  private String encrypt(Otp otp, String value) {
     try {
-      return HMacUtil.hmac(encryptionKey, String.format(HMAC_DATA, otpId, flow.name(), dataToVerify, value));
+      String data = String.format(HMAC_DATA, otp.getId(), otp.getFlow().name(), otp.getData(), value);
+      return HMacUtil.hmac(otp.getNonce().toString(), data);
     } catch (NoSuchAlgorithmException | InvalidKeyException e) {
       log.error("[EMAIL_OTP_FACADE] [HMAC_GENERATION_FAILED]", e);
       throw new IllegalStateException("Failed to generate OTP signature", e);

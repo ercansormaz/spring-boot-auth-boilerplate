@@ -52,7 +52,6 @@ The application reads its database connection and secrets from environment varia
 | `MYSQL_USERNAME` | Database user | `root` |
 | `MYSQL_PASSWORD` | Database password | Required |
 | `AUTH_TOKEN_FERNET_SECRET` | Fernet token secret (the default token type) | Required |
-| `OTP_ENCRYPTION_KEY` | Secret used to sign OTP data | Required |
 | `AUTH_GOOGLE_CLIENT_ID` | Google OAuth client ID; required while Google auth is enabled | Required when enabled |
 | `AUTH_APPLE_CLIENT_ID` | Apple client ID; required while Apple auth is enabled | Required when enabled |
 | `AUTH_TOKEN_JWT_SECRET` | JWT signing secret, if JWT is selected | Required for JWT |
@@ -63,7 +62,6 @@ Set the required values in your local environment before starting the applicatio
 ```bash
 export MYSQL_PASSWORD='your-mysql-password'
 export AUTH_TOKEN_FERNET_SECRET='your-valid-fernet-key'
-export OTP_ENCRYPTION_KEY='your-private-otp-key'
 export AUTH_GOOGLE_CLIENT_ID='your-google-client-id'
 export AUTH_APPLE_CLIENT_ID='your-apple-client-id'
 ```
@@ -137,7 +135,6 @@ Example response:
 
 ```json
 {
-  "id": "ae2bdbcc-367e-4518-b1cd-9b422681409a",
   "signature": "a1b2c3d4e5f6...",
   "length": 6,
   "expires_in": 180,
@@ -146,14 +143,13 @@ Example response:
 }
 ```
 
-The response contains the OTP ID, signature, expiration time, and retry cooldown information (`retry_in` seconds). With the default console sender, find the OTP value in the application log. Submit the returned ID and signature together with that value and the device information:
+The response contains the signature, expiration time, and retry cooldown information (`retry_in` seconds). With the default console sender, find the OTP value in the application log. Submit the returned signature together with that value and the device information:
 
 ```json
 {
   "email": "you@example.com",
   "remember": true,
   "otp": {
-    "id": "<otp-id-from-response>",
     "value": "<otp-from-application-log>",
     "signature": "<signature-from-response>"
   },

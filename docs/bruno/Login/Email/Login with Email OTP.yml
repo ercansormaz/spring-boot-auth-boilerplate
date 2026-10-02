@@ -1,5 +1,5 @@
 info:
-  name: Email Login with Otp
+  name: Login with Email OTP
   type: http
   seq: 6
 
@@ -10,10 +10,9 @@ http:
     type: json
     data: |-
       {
-        "email": "me@ercan.dev",
+        "email": "",
         "remember": true,
         "otp": {
-          "id": "{{otp.id}}",
           "value": "",
           "signature": "{{otp.signature}}"
         },

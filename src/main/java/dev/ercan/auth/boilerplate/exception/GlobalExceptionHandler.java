@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -41,7 +40,7 @@ public class GlobalExceptionHandler {
         .map(error -> {
             List<String> paths = Arrays.asList(error.getPropertyPath().toString().split("\\."));
             return new ValidationErrorDto(paths.getLast(), error.getMessage());
-        }).collect(Collectors.toList());
+        }).toList();
     // @formatter:on
 
     return new ErrorResponse(ErrorType.REQUEST_VALIDATION_ERROR, validationErrors);
