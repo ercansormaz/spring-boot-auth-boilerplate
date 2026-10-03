@@ -70,6 +70,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
     <!-- Project Dependencies -->
 
     <!-- Data Source Dependencies -->
@@ -84,13 +88,6 @@
       <artifactId>hibernate-envers</artifactId>
     </dependency>
     <!-- Data Source Dependencies -->
-
-    <!-- Caching Dependencies -->
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-    </dependency>
-    <!-- Caching Dependencies -->
 
     <dependency>
       <groupId>dev.ercan</groupId>
@@ -114,7 +111,7 @@
 
     <dependency>
       <groupId>com.bucket4j</groupId>
-      <artifactId>bucket4j_jdk17-core</artifactId>
+      <artifactId>bucket4j_jdk17-lettuce</artifactId>
       <version>8.19.0</version>
       <scope>compile</scope>
     </dependency>
@@ -165,6 +162,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

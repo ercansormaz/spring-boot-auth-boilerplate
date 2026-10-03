@@ -1,12 +1,14 @@
 package dev.ercan.auth.boilerplate.config;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import java.time.Duration;
 
 @EnableCaching
@@ -18,19 +20,22 @@ public class CacheConfiguration {
 
   @Primary
   @Bean(EXPIRE_AFTER_WRITE)
-  public CacheManager expireAfterWriteCacheManager() {
-    Caffeine<Object, Object> caffeine = Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(15));
-    CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-    caffeineCacheManager.setCaffeine(caffeine);
-    return caffeineCacheManager;
+  public CacheManager expireAfterWriteCacheManager(RedisConnectionFactory connectionFactory) {
+    RedisCacheWriter redisCacheWriter = RedisCacheWriter.lockingRedisCacheWriter(connectionFactory);
+    RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+        .entryTtl(Duration.ofMinutes(15));
+
+    return new RedisCacheManager(redisCacheWriter, redisCacheConfiguration);
   }
 
   @Bean(EXPIRE_AFTER_ACCESS)
-  public CacheManager expireAfterAccessCacheManager() {
-    Caffeine<Object, Object> caffeine = Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(15));
-    CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-    caffeineCacheManager.setCaffeine(caffeine);
-    return caffeineCacheManager;
+  public CacheManager expireAfterAccessCacheManager(RedisConnectionFactory connectionFactory) {
+    RedisCacheWriter redisCacheWriter = RedisCacheWriter.lockingRedisCacheWriter(connectionFactory);
+    RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+        .entryTtl(Duration.ofMinutes(15))
+        .enableTimeToIdle();
+
+    return new RedisCacheManager(redisCacheWriter, redisCacheConfiguration);
   }
 
 }

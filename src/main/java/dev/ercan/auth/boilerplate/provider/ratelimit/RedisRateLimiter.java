@@ -4,16 +4,18 @@ import dev.ercan.auth.boilerplate.model.pojo.RateLimitResult;
 import dev.ercan.auth.boilerplate.service.port.RateLimiter;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class InMemoryRateLimiter implements RateLimiter {
+@RequiredArgsConstructor
+public class RedisRateLimiter implements RateLimiter {
 
-  private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+  private final ProxyManager<String> proxyManager;
 
   @Override
   public boolean tryConsume(String key, int limit, Duration window) {
@@ -36,9 +38,9 @@ public class InMemoryRateLimiter implements RateLimiter {
   }
 
   private Bucket getBucket(String key, int limit, Duration window) {
-    return buckets.computeIfAbsent(key, k -> {
+    return proxyManager.builder().build(key, () -> {
       Bandwidth limitRule = Bandwidth.builder().capacity(limit).refillGreedy(limit, window).build();
-      return Bucket.builder().addLimit(limitRule).build();
+      return BucketConfiguration.builder().addLimit(limitRule).build();
     });
   }
 }

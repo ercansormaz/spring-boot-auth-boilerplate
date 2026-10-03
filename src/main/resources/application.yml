@@ -24,6 +24,19 @@ spring:
         await-termination: true
         await-termination-period: 60s
 
+  data:
+    redis:
+      #host: localhost
+      #port: 6379
+      cluster:
+        nodes:
+          - localhost:30001
+          - localhost:30002
+          - localhost:30003
+          - localhost:30004
+          - localhost:30005
+          - localhost:30006
+
 auth:
   token:
     type: fernet # fernet or jwt

@@ -5,7 +5,7 @@ A quick-start authentication backend for projects with web and mobile clients. I
 This repository contains the backend REST API; it does not include web or mobile client applications. Use it as a starting point and adapt its integrations, policies, and configuration to your project.
 
 > [!IMPORTANT]
-> **Single-node deployment only.** The current implementation is supported on a single application instance. Caffeine caches and rate-limit buckets are stored in process memory and are not shared between instances. Running multiple instances behind a load balancer can therefore lead to inconsistent rate limiting and cache behavior. A shared MySQL database does not remove this limitation. Redis-based multi-node support is future work and is not implemented yet.
+> **Redis is required by this implementation.** If you do not want to use Redis and need a single-node deployment, use the implementation on the [`single-node-deployment`](https://github.com/ercansormaz/spring-boot-auth-boilerplate/tree/single-node-deployment) branch instead.
 
 ## Features
 
