@@ -8,7 +8,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import static dev.ercan.auth.boilerplate.config.CaffeineCacheConfig.EXPIRE_AFTER_ACCESS;
+import static dev.ercan.auth.boilerplate.config.CacheConfiguration.EXPIRE_AFTER_ACCESS;
 import static dev.ercan.auth.boilerplate.constant.CacheTypes.ACCOUNT;
 
 @Service

@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Getter
@@ -25,7 +26,7 @@ import java.time.Instant;
 @Table(name = "login_history", indexes = {
     @Index(name = "idx_login_history_device", columnList = "device_id")
 })
-public class LoginHistory {
+public class LoginHistory implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

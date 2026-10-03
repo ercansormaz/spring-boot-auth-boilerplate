@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Getter
@@ -22,7 +23,7 @@ import java.time.Instant;
     @Index(name = "idx_access_token_device", columnList = "device_id", unique = true),
     @Index(name = "idx_access_token_expire", columnList = "expires_at")
 })
-public class AccessToken {
+public class AccessToken implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

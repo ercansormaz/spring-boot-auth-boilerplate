@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
-import static dev.ercan.auth.boilerplate.config.CaffeineCacheConfig.EXPIRE_AFTER_WRITE;
+import static dev.ercan.auth.boilerplate.config.CacheConfiguration.EXPIRE_AFTER_WRITE;
 import static dev.ercan.auth.boilerplate.constant.CacheTypes.ACCESS_TOKEN;
 
 @Service

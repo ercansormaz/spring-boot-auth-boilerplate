@@ -11,7 +11,7 @@ import java.time.Duration;
 
 @EnableCaching
 @Configuration
-public class CaffeineCacheConfig {
+public class CacheConfiguration {
 
   public static final String EXPIRE_AFTER_WRITE = "expireAfterWrite";
   public static final String EXPIRE_AFTER_ACCESS = "expireAfterAccess";

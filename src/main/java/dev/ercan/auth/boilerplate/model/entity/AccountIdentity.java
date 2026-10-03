@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import java.io.Serializable;
 import java.time.Instant;
 
 @Getter
@@ -25,7 +26,7 @@ import java.time.Instant;
 @Table(name = "account_identity", indexes = {
     @Index(name = "idx_account_identity", columnList = "provider, subject", unique = true)
 })
-public class AccountIdentity {
+public class AccountIdentity implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

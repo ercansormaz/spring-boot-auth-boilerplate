@@ -21,6 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ import java.util.UUID;
 @Table(name = "device", indexes = {
     @Index(name = "idx_device_account_identifier", columnList = "account_id, identifier", unique = true)
 })
-public class Device {
+public class Device implements Serializable {
 
   @Id
   private UUID id;

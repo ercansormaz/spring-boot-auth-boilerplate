@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ import java.util.UUID;
     @Index(name = "idx_otp_expire", columnList = "expires_at"),
     @Index(name = "idx_otp_flow_data", columnList = "flow, data")
 })
-public class Otp {
+public class Otp implements Serializable {
 
   @Id
   private UUID id;

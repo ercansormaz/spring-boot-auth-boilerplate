@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ import java.util.UUID;
 @Table(name = "qr_code", indexes = {
     @Index(name = "idx_qr_code_expire", columnList = "expires_at")
 })
-public class QrCode {
+public class QrCode implements Serializable {
 
   @Id
   private UUID id;
